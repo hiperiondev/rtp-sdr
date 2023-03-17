@@ -45,11 +45,7 @@
 #include "fec_pack.h"
 #include "fec_pkt.h"
 
-/*M
- // Initialize a FEC packet by filling common header fields.}
-
- The version field is set to $1$ and the payload length to $0$.
- **/
+ // Initialize a FEC packet by filling common header fields. The version field is set to 1 and the payload length to 0.
 void fec_pkt_init(fec_pkt_t *pkt) {
     assert(pkt != NULL);
 
@@ -65,9 +61,7 @@ static void fec_pkt_pack(fec_pkt_t *pkt) {
 
     unsigned char *ptr = pkt->data;
 
-    /*M
-     Pack the header data into the data buffer.
-     **/
+    // Pack the header data into the data buffer.
     UINT8_PACK(ptr, pkt->hdr.magic);
     UINT8_PACK(ptr, pkt->hdr.version);
     UINT8_PACK(ptr, pkt->hdr.group_seq);
@@ -79,12 +73,8 @@ static void fec_pkt_pack(fec_pkt_t *pkt) {
     UINT32_PACK(ptr, pkt->hdr.group_tstamp);
 }
 
-/*M
- // Send a FEC packet to filedescriptor using send.}
-
- Fills the packet data buffer with the packed header. Sequence
- number fields are not incremented, but have to be set by the application.
- **/
+// Send a FEC packet to file descriptor using send.
+// Fills the packet data buffer with the packed header. Sequence number fields are not incremented, but have to be set by the application.
 ssize_t fec_pkt_send(fec_pkt_t *pkt, int fd) {
     assert(pkt != NULL);
     fec_pkt_pack(pkt);
@@ -97,25 +87,19 @@ ssize_t fec_pkt_sendto(fec_pkt_t *pkt, int fd, struct sockaddr *to, socklen_t to
     return sendto(fd, pkt->data, FEC_PKT_HDR_SIZE + pkt->hdr.len, 0, to, tolen);
 }
 
-/*M
- // Read a FEC packet from filedescriptor.}
-
- Reads a FEC packet from the filedescriptor, and unpacks the header
- fields into the header structure.
- **/
+// Read a FEC packet from file descriptor.
+// Reads a FEC packet from the file descriptor, and unpacks the header fields into the header structure.
 int fec_pkt_read(fec_pkt_t *pkt, int fd) {
     assert(pkt != NULL);
 
-    /*M
-     Read the packet (reading maximum packet size from the UDP socket).
-     **/
+    // Read the packet (reading maximum packet size from the UDP socket).
     ssize_t len;
     switch (len = read(fd, pkt->data, FEC_PKT_SIZE)) {
         case 0:
-            /* EOF */
+            // EOF
             return 0;
         case -1:
-            /* error */
+            // error
             return -1;
         default:
             break;
@@ -124,9 +108,7 @@ int fec_pkt_read(fec_pkt_t *pkt, int fd) {
     if (len < FEC_PKT_HDR_SIZE)
         return -1;
 
-    /*M
-     Unpack the header data.
-     **/
+    // Unpack the header data.
     unsigned char *ptr = pkt->data;
     pkt->hdr.magic = UINT8_UNPACK(ptr);
     if (pkt->hdr.magic != FEC_PKT_MAGIC)
@@ -143,13 +125,8 @@ int fec_pkt_read(fec_pkt_t *pkt, int fd) {
     if (pkt->hdr.len != (len - FEC_PKT_HDR_SIZE))
         return -1;
 
-    /*M
-     Update the payload pointer.
-     **/
+    // Update the payload pointer.
     pkt->payload = pkt->data + FEC_PKT_HDR_SIZE;
 
     return 1;
 }
-
-/*M
- **/

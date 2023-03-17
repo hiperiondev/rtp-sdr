@@ -50,12 +50,12 @@ gf gf_inv[256] = { 0 };
 
 // A primitive polynomial.
 
-// A primitive polynomial for \gf{2^8}, namely 1 + x^2 + x^3 + x^4 + x^8
+// A primitive polynomial for gf{2^8}, namely 1 + x^2 + x^3 + x^4 + x^8
 static char gf_prim_poly[] = "101110001";
 
 // Initialize data structures.}
 void gf_init(void) {
-    // Notice that $x^8 = x^4 + x^3 + x^2 + 1$.
+    // Notice that x^8 = x^4 + x^3 + x^2 + 1.
     // We will fill up the "eight" power of alpha from the prime polynomial.
     gf_polys[8] = 0;
 
@@ -75,15 +75,13 @@ void gf_init(void) {
     // Remember logarithm of eight element.
     gf_logs[gf_polys[8]] = 8;
 
-    // For each further element, $a^n = a^(n-1) * a$.
-    // We just need to calculate the modulo \verb|gf_prim_poly|, which is of degree $8$.
+    // For each further element, a^n = a^(n-1) * a.
+    // We just need to calculate the modulo gf_prim_poly, which is of degree 8.
     g = 1 << 7;
     for (i = 9; i < 255; i++) {
         if (gf_polys[i - 1] >= g)
-            /*M
-             // $a^{n-1} * a > $ \verb|gf_prim_poly|, then
-             // $a^n = a^{n-1} * a = a^8 + ... = a^4 + a^3 + a^2 + 1$.
-             **/
+             // a^{n-1} * a > $ gf_prim_poly, then
+             // a^n = a^{n-1} * a = a^8 + ... = a^4 + a^3 + a^2 + 1.
             gf_polys[i] = gf_polys[8] ^ ((gf_polys[i - 1]) << 1);
         else
             gf_polys[i] = gf_polys[i - 1] << 1;
@@ -117,7 +115,7 @@ void gf_init(void) {
 }
 
 // Computes addition of a row multiplied by a constant.
-// Computes $a = a + c * b$, $a, b \in \gf{2^8}^k, c \in \gf{2^8}$.
+// Computes a = a + c * b, a, b in gf{2^8}^k, c in gf{2^8}.
 void gf_add_mul(gf *a, gf *b, gf c, int k) {
     int i;
     for (i = 0; i < k; i++)

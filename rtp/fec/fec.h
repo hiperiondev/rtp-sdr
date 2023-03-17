@@ -39,30 +39,17 @@
 
 #include "fec_galois.h"
 
-/*M
- // FEC parameter structure.}
-
- Contains the $n, k$ parameters for FEC, as well as the generator
- matrix.
- **/
+// FEC parameter structure.
+// Contains the n, k parameters for FEC, as well as the generator matrix.
 typedef struct fec_s {
-    /*M
-     FEC parameters.
-     **/
-    unsigned int k, n;
-    /*M
-     Linear block code generator matrix.
-     **/
-    gf *gen_matrix;
+    unsigned int k, n;        // FEC parameters.
+              gf *gen_matrix; // Linear block code generator matrix.
 } fec_t;
 
   void fec_free(fec_t *fec);
 fec_t* fec_new(unsigned int k, unsigned int n);
 
-void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int len);
- int fec_decode(fec_t *fec, gf *buf, unsigned int idxs[], unsigned len);
-
-/*C
- **/
+  void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int len);
+   int fec_decode(fec_t *fec, gf *buf, unsigned int idxs[], unsigned len);
 
 #endif /* FEC_H_ */

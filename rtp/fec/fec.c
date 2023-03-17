@@ -45,9 +45,7 @@
 #include "fec.h"
 #include "fec_matrix.h"
 
-/*M
- // Free a FEC parameter structure.}
- **/
+// Free a FEC parameter structure.
 void fec_free(fec_t *fec) {
     assert(fec != NULL);
     assert(fec->gen_matrix != NULL);
@@ -55,20 +53,13 @@ void fec_free(fec_t *fec) {
     free(fec);
 }
 
-/*M
- // Initialize a FEC parameter structure.}
-
- Create a generator matrix.
- % XXX Documentation for generator matrix
- **/
+// Initialize a FEC parameter structure. Create a generator matrix.
 fec_t* fec_new(unsigned int k, unsigned int n) {
     assert((k <= n) || "k is too big");
     assert((k <= 256) || "k is too big");
     assert((n <= 256) || "n is too big");
 
-    /*M
-     Init Galois arithmetic if not already initialized.
-     **/
+    // Init Galois arithmetic if not already initialized.
     static int gf_initialized = 0;
     if (!gf_initialized) {
         gf_init();
@@ -84,15 +75,11 @@ fec_t* fec_new(unsigned int k, unsigned int n) {
     res->k = k;
     res->n = n;
 
-    /*M
-     Fill the matrix with powers of field elements.
-     **/
+    // Fill the matrix with powers of field elements.
     gf tmp[k * n];
-    /*  gf *tmp = res->gen_matrix; */
+    //gf *tmp = res->gen_matrix;
 
-    /*M
-     First row is special (powers of $0$).
-     **/
+    // First row is special (powers of 0).
     tmp[0] = 1;
     unsigned int col;
     for (col = 1; col < k; col++)
@@ -110,9 +97,7 @@ fec_t* fec_new(unsigned int k, unsigned int n) {
     matrix_print(tmp, res->n, res->k);
 #endif
 
-    /*M
-     Invert the upper $k \times k$ vandermonde matrix.
-     **/
+    // Invert the upper k times k vandermonde matrix.
     matrix_inv_vandermonde(tmp, k);
 
 #ifdef DEBUG
@@ -120,16 +105,10 @@ fec_t* fec_new(unsigned int k, unsigned int n) {
     matrix_print(tmp, res->n, res->k);
 #endif
 
-    /*M
-     Multiply the inverted upper $k \times k$ vandermonde matrix with
-     the lower band of the matrix.
-     **/
+    // Multiply the inverted upper k times k vandermonde matrix with the lower band of the matrix.
     matrix_mul(tmp + k * k, tmp, res->gen_matrix + k * k, n - k, k, k);
 
-    /*M
-     Fill the upper $k \times k$ matrix with the identity matrix to
-     generate a systematic matrix.
-     **/
+    // Fill the upper k times k matrix with the identity matrix to generate a systematic matrix.
     for (row = 0; row < k; row++)
         for (col = 0; col < k; col++)
             if (col == row)
@@ -145,13 +124,10 @@ fec_t* fec_new(unsigned int k, unsigned int n) {
     return res;
 }
 
-/*M
- // Produce encoded output packet.}
+// Produce encoded output packet.
 
- Encodes the \verb|idx|'th output data packet from the \verb|k| data
- packets in \verb|src| and the generator matrix in \verb|fec|. For
- \verb|idx| $<$ \verb|k|, we just copy the data (systematic matrix).
- **/
+// Encodes the idx'th output data packet from the k data packets in src and the generator matrix in fec.
+// For idx < k, we just copy the data (systematic matrix).
 void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int len) {
     assert((idx < fec->n) || "Index of output packet to high");
 
@@ -168,14 +144,9 @@ void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int l
     }
 }
 
-/*M
- // Builds the decoding matrix.}
-
- Builds the decoding matrix into \verb|matrix| out of the indexes
- stored in \verb|idxs|.
-
- Returns 0 on error, 1 on success.
- **/
+// Builds the decoding matrix.
+// Builds the decoding matrix into matrix out of the indexes stored in idxs.
+// Returns 0 on error, 1 on success.
 int fec_decode_matrix(fec_t *fec, gf *matrix, unsigned int idxs[]) {
     gf *p;
 
@@ -196,11 +167,8 @@ int fec_decode_matrix(fec_t *fec, gf *matrix, unsigned int idxs[]) {
     return 1;
 }
 
-/*M
- // Put straight packets at the right place.}
-
- Packets with index $<$ k are put at the right place.
- **/
+// Put straight packets at the right place.
+// Packets with index < k are put at the right place.
 static int fec_shuffle(fec_t *fec, unsigned int idxs[]) {
     unsigned int i;
     for (i = 0; i < fec->k;) {
@@ -210,7 +178,7 @@ static int fec_shuffle(fec_t *fec, unsigned int idxs[]) {
         else {
             unsigned int c = idxs[i];
 
-            /* check for conflicts */
+            // check for conflicts
             if (idxs[c] == c)
                 return 0;
 
@@ -222,20 +190,14 @@ static int fec_shuffle(fec_t *fec, unsigned int idxs[]) {
     return 1;
 }
 
-/*M
- // Decode the received packets.}
-
- % XXXX
- **/
+// Decode the received packets.
 int fec_decode(fec_t *fec, gf *pkts, unsigned int idxs[], unsigned len) {
     assert(fec != NULL);
 
     if (!fec_shuffle(fec, idxs))
         return 0;
 
-    /*M
-     Build decoding matrix.
-     **/
+    // Build decoding matrix.
     gf dec_matrix[fec->k * fec->k];
     if (!fec_decode_matrix(fec, dec_matrix, idxs))
         return 0;
@@ -255,9 +217,6 @@ int fec_decode(fec_t *fec, gf *pkts, unsigned int idxs[], unsigned len) {
 
     return 1;
 }
-
-/*C
- **/
 
 #ifdef FEC_TEST
 #include <stdio.h>

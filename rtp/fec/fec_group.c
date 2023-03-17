@@ -138,8 +138,8 @@ void fec_group_insert_pkt(fec_group_t *group, fec_pkt_t *pkt) {
     }
 }
 
-// Decode a FEC group into an ADU queue.}
-//If the group is not complete, the lower packets (with \verb|packet_seq| $<$ \verb|fec_k|) are added to the ADU.
+// Decode a FEC group into an ADU queue.
+// If the group is not complete, the lower packets (with packet_se| $<$ fec_k) are added to the ADU.
 int fec_group_decode(fec_group_t *group) {
     assert(group != NULL);
 

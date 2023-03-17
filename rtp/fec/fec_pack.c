@@ -36,54 +36,33 @@
 
 #include "fec_pack.h"
 
-/*@+charint@*/
-
-/*M
- // Unpack a big endian 16 bit integer.}
-
- This could not be done in a macro.
- **/
-unsigned int uint16_unpack__(/*@out@*/unsigned char **ptr) {
+// Unpack a big endian 16 bit integer. This could not be done in a macro.
+unsigned int uint16_unpack__(unsigned char **ptr) {
     int i = (*((*ptr)++) & 0xFF) << 8;
     return (i |= *((*ptr)++) & 0xFF);
 }
 
-/*M
- // Unpack a big endian 32 bit integer.}
-
- This could not be done in a macro.
- **/
-unsigned int uint32_unpack__(/*@out@*/unsigned char **ptr) {
+// Unpack a big endian 32 bit integer. This could not be done in a macro.
+unsigned int uint32_unpack__(unsigned char **ptr) {
     int i = (*((*ptr)++) & 0xFF) << 24;
     i |= (*((*ptr)++) & 0xFF) << 16;
     i |= (*((*ptr)++) & 0xFF) << 8;
     return (i |= *((*ptr)++) & 0xFF);
 }
 
-/*M
- // Unpack a little endian 16 bit integer.}
-
- This could not be done in a macro.
- **/
-unsigned int le_uint16_unpack__(/*@out@*/unsigned char **ptr) {
+// Unpack a little endian 16 bit integer. This could not be done in a macro.
+unsigned int le_uint16_unpack__(unsigned char **ptr) {
     int i = (*((*ptr)++) & 0xFF);
     return (i |= (*((*ptr)++) & 0xFF) << 8);
 }
 
-/*M
- // Unpack a little endian 32 bit integer.}
-
- This could not be done in a macro.
- **/
-unsigned int le_uint32_unpack__(/*@out@*/unsigned char **ptr) {
+// Unpack a little endian 32 bit integer. This could not be done in a macro.
+unsigned int le_uint32_unpack__(unsigned char **ptr) {
     int i = (*((*ptr)++) & 0xFF);
     i |= (*((*ptr)++) & 0xFF) << 8;
     i |= (*((*ptr)++) & 0xFF) << 16;
     return (i |= (*((*ptr)++) & 0xFF) << 24);
 }
-
-/*C
- **/
 
 #ifdef PACK_TEST
 #include <stdio.h>
@@ -124,4 +103,3 @@ int main(void) {
     return 0;
 }
 #endif
-

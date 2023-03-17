@@ -38,7 +38,7 @@
 #define FEC_GALOIS_H_
 
 // Galois field element type.
-// We use polynomials over \gf{8}, so we need 8 bits.
+// We use polynomials over gf{8}, so we need 8 bits.
 typedef unsigned char gf;
 
 // Polynomial representation of field elements.
