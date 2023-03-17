@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -41,11 +41,9 @@
 #include <string.h>
 
 #include "fec.h"
-#include "fec-group.h"
+#include "fec_group.h"
 
-/*M
- \emph{Initialize a FEC group structure to hold incoming packets.}
- **/
+// Initialize a FEC group structure to hold incoming packets.
 void fec_group_init(fec_group_t *group, unsigned char fec_k, unsigned char fec_n, unsigned char seq, unsigned long tstamp, unsigned short fec_len) {
     assert(group != NULL);
 
@@ -61,7 +59,7 @@ void fec_group_init(fec_group_t *group, unsigned char fec_k, unsigned char fec_n
     group->lengths = malloc(sizeof(unsigned int) * fec_n);
     assert(group->lengths != NULL);
 
-    /* init pointers */
+    // init pointers
     int i;
     for (i = 0; i < fec_n; i++) {
         group->lengths[i] = 0;
@@ -70,9 +68,7 @@ void fec_group_init(fec_group_t *group, unsigned char fec_k, unsigned char fec_n
     group->decoded = 0;
 }
 
-/*M
- \emph{Destroy a FEC group structure.}
- **/
+// Destroy a FEC group structure.
 void fec_group_destroy(fec_group_t *group) {
     assert(group != NULL);
 
@@ -89,9 +85,7 @@ void fec_group_destroy(fec_group_t *group) {
     fec_group_clear(group);
 }
 
-/*M
- \emph{Clear a FEC group structure.}
- **/
+// Clear a FEC group structure.
 void fec_group_clear(fec_group_t *group) {
     group->buf = NULL;
     group->lengths = NULL;
@@ -101,9 +95,7 @@ void fec_group_clear(fec_group_t *group) {
     group->rcvd_pkts = 0;
 }
 
-/*M
- \emph{Print debug information about a FEC group.}
- **/
+// Print debug information about a FEC group.
 void fec_group_print(fec_group_t *group) {
     assert(group != NULL);
 
@@ -123,18 +115,15 @@ void fec_group_print(fec_group_t *group) {
     }
 }
 
-/*M
- \emph{Insert a received FEC packet into a FEC group.}
- **/
+// Insert a received FEC packet into a FEC group.
 void fec_group_insert_pkt(fec_group_t *group, fec_pkt_t *pkt) {
     assert(group != NULL);
     assert(pkt != NULL);
 
-    /* sanity checks, no real error handling yet */
+    // sanity checks, no real error handling yet
     assert(pkt->hdr.packet_seq < group->fec_n);
     assert(pkt->hdr.len <= group->fec_len);
-    /* XXX das kann passieren wenn der streamer restartet, und
-     versehentlich die selbe groupseqnumber erwischt. */
+    // XXX this can happen when the streamer restarts and accidentally catches the same groupseqnumbert.
     assert(pkt->hdr.group_tstamp == group->tstamp);
 
     /* check if packet already received */
@@ -149,26 +138,20 @@ void fec_group_insert_pkt(fec_group_t *group, fec_pkt_t *pkt) {
     }
 }
 
-/*M
- \emph{Decode a FEC group into an ADU queue.}
-
- If the group is not complete, the lower packets (with \verb|packet_seq| $<$
- \verb|fec_k|) are added to the ADU.
- **/
+// Decode a FEC group into an ADU queue.}
+//If the group is not complete, the lower packets (with \verb|packet_seq| $<$ \verb|fec_k|) are added to the ADU.
 int fec_group_decode(fec_group_t *group) {
     assert(group != NULL);
 
     if (group->decoded)
         return 1;
 
-    /* check if enough packets in the group have been received to
-     * recover the complete source data.
-     */
+    // check if enough packets in the group have been received to recover the complete source data.
     if (group->rcvd_pkts >= group->fec_k) {
-        /* we have enough packets in the fec group */
+        // we have enough packets in the fec group
         unsigned int idxs[group->fec_k];
 
-        /* create index array and pointer array. */
+        // create index array and pointer array.
         int i, j;
         for (i = 0, j = 0; i < group->fec_n; i++) {
             if (group->lengths[i] > 0) {
@@ -181,11 +164,11 @@ int fec_group_decode(fec_group_t *group) {
 
         assert(j == group->fec_k);
 
-        /* create the fec structure. */
+        // create the fec structure.
         fec_t *fec = fec_new(group->fec_k, group->fec_n);
         assert(fec != NULL);
 
-        /* decode the fec group. */
+        // decode the fec group.
         if (!fec_decode(fec, group->buf, idxs, group->fec_len)) {
             fprintf(stderr, "Could not decode FEC group\n");
             fec_free(fec);
@@ -202,57 +185,6 @@ int fec_group_decode(fec_group_t *group) {
         return 0;
     }
 }
-
-/*
- int fec_group_decode_to_adus(fec_group_t *group,
- aq_t *aq) {
- assert(group != NULL);
- assert(aq != NULL);
-
- if (fec_group_decode(group)) {
- ///M
- //  Add the adus to the adu queue.
-
- int i;
- for (i = 0; i < group->fec_k; i++) {
- adu_t adu;
- memcpy(adu.raw,
- group->buf + i * group->fec_len,
- group->fec_len);
-
- if (!mp3_unpack(&adu)) {
- fprintf(stderr, "Error unpacking the mp3 adu\n");
- return 0;
- }
- aq_add_adu(aq, &adu);
- }
- } else {
- //M
- //  We don't have enough packets in the group to recover the whole
- //  source data, add only the uncoded ADUs we received (systematic
- //  encoding).
-
- int i;
- for (i = 0; i < group->fec_k; i++) {
- if (group->lengths[i] > 0) {
- adu_t adu;
- memcpy(adu.raw,
- group->buf + i * group->fec_len,
- group->fec_len);
-
- if (!mp3_unpack(&adu)) {
- fprintf(stderr, "Error unpacking the mp3 adu\n");
- return 0;
- }
-
- aq_add_adu(aq, &adu);
- }
- }
- }
-
- return 1;
- }
- */
 
 #ifdef FEC_GROUP_TEST
 unsigned char fec_k = 20;
@@ -308,7 +240,7 @@ int main(int argc, char *argv[]) {
             in_adus[cnt] = aq_get_adu(&qin);
             assert(in_adus[cnt] != NULL);
 
-            /* check if the FEC group is complete */
+            // check if the FEC group is complete
             if (++cnt == fec_k) {
 
                 unsigned int max_len = 0;
@@ -394,9 +326,7 @@ int main(int argc, char *argv[]) {
                 while ((frame_out = aq_get_frame(&qout)) != NULL) {
                     memset(frame_out->raw, 0, 4 + frame_out->si_size);
 
-                    /*M
-                     Write packet payload.
-                     **/
+                    // Write packet payload.
                     if (!mp3_fill_hdr(frame_out) || !mp3_fill_si(frame_out) || (mp3_write_frame(&out, frame_out) <= 0)) {
                         fprintf(stderr, "Error writing to stdout\n");
                         free(frame_out);
@@ -414,7 +344,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        /* fgetc(stdin); */
+        // fgetc(stdin);
     }
 
     file_close(&in);

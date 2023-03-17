@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -67,8 +67,8 @@
  * @endverbatim
  */
 
-#ifndef LIBRTP_RTCP_SDES_H_
-#define LIBRTP_RTCP_SDES_H_
+#ifndef RTCP_SDES_H_
+#define RTCP_SDES_H_
 
 #include <stdint.h>
 
@@ -222,4 +222,4 @@ int rtcp_sdes_set_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type, con
  */
 void rtcp_sdes_clear_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type);
 
-#endif // LIBRTP_RTCP_SDES_H_
+#endif // RTCP_SDES_H_

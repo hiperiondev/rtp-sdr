@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,8 +34,8 @@
  *
  */
 
-#ifndef LIBRTP_NTP_H_
-#define LIBRTP_NTP_H_
+#ifndef RTP_NTP_H_
+#define RTP_NTP_H_
 
 #include <stdint.h>
 
@@ -96,4 +96,4 @@ uint32_t ntp_short(ntp_tv ntp);
  */
 ntp_tv ntp_diff(ntp_tv a, ntp_tv b);
 
-#endif // LIBRTP_NTP_H_
+#endif // RTP_NTP_H_

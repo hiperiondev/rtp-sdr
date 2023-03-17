@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,8 +34,8 @@
  *
  */
 
-#ifndef LIBRTP_RTCP_HEADER_H_
-#define LIBRTP_RTCP_HEADER_H_
+#ifndef RTCP_HEADER_H_
+#define RTCP_HEADER_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -94,4 +94,4 @@ int rtcp_header_serialize(const rtcp_header *header, uint8_t *buffer, size_t siz
  */
 int rtcp_header_parse(rtcp_header *header, const uint8_t *buffer, size_t size);
 
-#endif // LIBRTP_RTCP_HEADER_H_
+#endif // RTCP_HEADER_H_

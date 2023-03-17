@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,55 +34,30 @@
  *
  */
 
-#include "ntp.h"
+#ifndef FEC_GALOIS_H_
+#define FEC_GALOIS_H_
 
-/**
- * @brief 1970 - 1900 in seconds.
- * @private
- */
-#define LIBRTP_NTP_UNIX_OFFSET (2208988800UL)
+// Galois field element type.
+// We use polynomials over \gf{8}, so we need 8 bits.
+typedef unsigned char gf;
 
-/**
- * @brief 2^32 as a double.
- * @private
- */
-#define LIBRTP_NTP_FRAC (4294967296.0)
+// Polynomial representation of field elements.
+extern gf gf_polys[256];
 
-double ntp_to_double(ntp_tv ntp) {
-    double s = (double) ntp.sec;
-    s += (double) ntp.frac / LIBRTP_NTP_FRAC;
+// Logarithmic representation of field elements.
+extern gf gf_logs[256];
 
-    return s;
-}
+// Precomputed multiplication table.
+extern gf gf_mul[256][256];
 
-double ntp_to_unix(ntp_tv ntp) {
-    // Shift epoch from 1900 to 1970
-    return ntp_to_double(ntp) - LIBRTP_NTP_UNIX_OFFSET;
-}
+// Precomputed inverse table.
+extern gf gf_inv[256];
 
-ntp_tv ntp_from_double(double s) {
-    ntp_tv ntp;
-    ntp.sec = (uint32_t) s;
+void gf_init(void);
+void gf_add_mul(gf *a, gf *b, gf c, int k);
 
-    double frac = (s - ntp.sec);
-    ntp.frac = (uint32_t) (frac * LIBRTP_NTP_FRAC);
+#define GF_MUL(x, y) (gf_mul[(x)][(y)])
+#define GF_ADD(x, y) ((x) ^ (y))
+#define GF_INV(x) (gf_inv[(x)])
 
-    return ntp;
-}
-
-ntp_tv ntp_from_unix(double s) {
-    // Shift epoch from 1970 to 1900
-    return ntp_from_double(s + LIBRTP_NTP_UNIX_OFFSET);
-}
-
-uint32_t ntp_short(ntp_tv ntp) {
-    // Lower 16 bits of seconds and upper 16 bits of frac.
-    return (ntp.sec << 16) | (ntp.frac >> 16);
-}
-
-ntp_tv ntp_diff(ntp_tv a, ntp_tv b) {
-    double s1 = ntp_to_double(a);
-    double s2 = ntp_to_double(b);
-
-    return ntp_from_double(s1 - s2);
-}
+#endif /* FEC_GALOIS_H_ */

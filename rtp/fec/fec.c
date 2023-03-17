@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,19 +34,19 @@
  *
  */
 
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
 #include "fec.h"
-#include "matrix.h"
-
-#ifdef DEBUG
-#include <stdio.h>
-#endif
+#include "fec_matrix.h"
 
 /*M
- \emph{Free a FEC parameter structure.}
+ // Free a FEC parameter structure.}
  **/
 void fec_free(fec_t *fec) {
     assert(fec != NULL);
@@ -56,7 +56,7 @@ void fec_free(fec_t *fec) {
 }
 
 /*M
- \emph{Initialize a FEC parameter structure.}
+ // Initialize a FEC parameter structure.}
 
  Create a generator matrix.
  % XXX Documentation for generator matrix
@@ -146,7 +146,7 @@ fec_t* fec_new(unsigned int k, unsigned int n) {
 }
 
 /*M
- \emph{Produce encoded output packet.}
+ // Produce encoded output packet.}
 
  Encodes the \verb|idx|'th output data packet from the \verb|k| data
  packets in \verb|src| and the generator matrix in \verb|fec|. For
@@ -169,7 +169,7 @@ void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int l
 }
 
 /*M
- \emph{Builds the decoding matrix.}
+ // Builds the decoding matrix.}
 
  Builds the decoding matrix into \verb|matrix| out of the indexes
  stored in \verb|idxs|.
@@ -197,7 +197,7 @@ int fec_decode_matrix(fec_t *fec, gf *matrix, unsigned int idxs[]) {
 }
 
 /*M
- \emph{Put straight packets at the right place.}
+ // Put straight packets at the right place.}
 
  Packets with index $<$ k are put at the right place.
  **/
@@ -223,7 +223,7 @@ static int fec_shuffle(fec_t *fec, unsigned int idxs[]) {
 }
 
 /*M
- \emph{Decode the received packets.}
+ // Decode the received packets.}
 
  % XXXX
  **/

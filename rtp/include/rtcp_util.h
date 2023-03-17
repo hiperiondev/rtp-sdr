@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,8 +34,8 @@
  *
  */
 
-#ifndef LIBRTP_RTCP_UTIL_H_
-#define LIBRTP_RTCP_UTIL_H_
+#ifndef RTCP_UTIL_H_
+#define RTCP_UTIL_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -119,4 +119,4 @@ double rtcp_interval(int members, int senders, double rtcp_bw, bool we_sent, dou
  */
 void rtcp_reverse_reconsider(double *tp, double *tn, double tc, int pmembers, int members);
 
-#endif // LIBRTP_RTCP_UTIL_H_
+#endif // RTCP_UTIL_H_

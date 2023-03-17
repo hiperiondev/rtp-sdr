@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,12 +34,12 @@
  *
  */
 
-#include "pack.h"
+#include "fec_pack.h"
 
 /*@+charint@*/
 
 /*M
- \emph{Unpack a big endian 16 bit integer.}
+ // Unpack a big endian 16 bit integer.}
 
  This could not be done in a macro.
  **/
@@ -49,7 +49,7 @@ unsigned int uint16_unpack__(/*@out@*/unsigned char **ptr) {
 }
 
 /*M
- \emph{Unpack a big endian 32 bit integer.}
+ // Unpack a big endian 32 bit integer.}
 
  This could not be done in a macro.
  **/
@@ -61,7 +61,7 @@ unsigned int uint32_unpack__(/*@out@*/unsigned char **ptr) {
 }
 
 /*M
- \emph{Unpack a little endian 16 bit integer.}
+ // Unpack a little endian 16 bit integer.}
 
  This could not be done in a macro.
  **/
@@ -71,7 +71,7 @@ unsigned int le_uint16_unpack__(/*@out@*/unsigned char **ptr) {
 }
 
 /*M
- \emph{Unpack a little endian 32 bit integer.}
+ // Unpack a little endian 32 bit integer.}
 
  This could not be done in a macro.
  **/

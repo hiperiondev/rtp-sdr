@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,13 +34,13 @@
  *
  */
 
-#include "fec-pkt.h"
+#ifndef FEC_GROUP_H_
+#define FEC_GROUP_H_
 
-/*M
- \emph{FEC group structure.}
+#include "fec_pkt.h"
 
- Used to collect packets until enough are available to decode the group.
- **/
+ // FEC group structure.
+ // Used to collect packets until enough are available to decode the group.
 typedef struct fec_group_s {
     /*M
      $k$ FEC parameter. At least $k$ packets have to be collected in
@@ -89,4 +89,6 @@ void fec_group_destroy(fec_group_t *group);
 void fec_group_clear(fec_group_t *group);
 void fec_group_insert_pkt(fec_group_t *group, fec_pkt_t *pkt);
 int fec_group_decode(fec_group_t *group);
-//int fec_group_decode_to_adus(fec_group_t *group, aq_t *aq);
+
+
+#endif // FEC_GROUP_H_

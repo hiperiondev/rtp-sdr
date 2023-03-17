@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,13 +34,13 @@
  *
  */
 
-#ifndef FEC_H__
-#define FEC_H__
+#ifndef FEC_H_
+#define FEC_H_
 
-#include "galois.h"
+#include "fec_galois.h"
 
 /*M
- \emph{FEC parameter structure.}
+ // FEC parameter structure.}
 
  Contains the $n, k$ parameters for FEC, as well as the generator
  matrix.
@@ -65,4 +65,4 @@ void fec_encode(fec_t *fec, gf *src[], gf *dst, unsigned int idx, unsigned int l
 /*C
  **/
 
-#endif /* FEC_H__ */
+#endif /* FEC_H_ */

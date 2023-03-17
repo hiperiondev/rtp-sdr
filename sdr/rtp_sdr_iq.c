@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -36,10 +36,12 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#include "rtp_iq.h"
+#include "rtp_sdr_iq.h"
 
-uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port) {
+uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
+        bool use_fec, iq_t *buffer, size_t buffer_size) {
     const int32_t frame_samples = (sample_rate * duration) / 1000;
     switch (type) {
         case IQ_PT8:
@@ -55,12 +57,15 @@ uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sam
             return -1;
     }
 
+    (*session)->use_fec = use_fec;
     (*session)->type = type;
     (*session)->sample_rate = sample_rate;
     (*session)->frequency = frequency;
 
     (*session)->host = host;
     (*session)->port = port;
+
+    (*session)->iq_buffer = rbuf_init(buffer, buffer_size);
 
     (*session)->header = rtp_header_create();
     rtp_header_init((*session)->header, type, rand(), rand(), rand());
@@ -80,7 +85,6 @@ void rcp_iq_deinit(session_iq_t *session) {
             free((*session)->frame._24);
             break;
     }
-
+    rbuf_free((*session)->iq_buffer);
     free(*session);
 }
-

@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -430,13 +430,13 @@ static int _set_multicast_loopback(rtp_socket_t *sock, char loop) {
 }
 
 int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *port, const char *ifname) {
-    int is_multicast;
+    int is_multicast, err;
 
     // Initialise
     memset(sock, 0, sizeof(rtp_socket_t));
 
     rtp_socket_info("Opening socket: %s/%s", address, port);
-    if (_create_socket(sock, DO_BIND_SOCKET, address, port)) {
+    if ((err = _create_socket(sock, DO_BIND_SOCKET, address, port))) {
         rtp_socket_error("Failed to open socket for receiving.");
         return -1;
     }
@@ -450,7 +450,7 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
         rtp_socket_debug("Joining multicast group");
         if (_join_group(sock)) {
             rtp_socket_close(sock);
-            return -1;
+            return -2;
         }
 
     }
@@ -464,7 +464,7 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
 int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *port, const char *ifname) {
     int is_multicast;
 
-    // Initialise
+    // Initialize
     memset(sock, 0, sizeof(rtp_socket_t));
 
     rtp_socket_info("Opening transmit socket: %s/%s", address, port);
@@ -547,6 +547,7 @@ void rtp_socket_close(rtp_socket_t *sock) {
     }
 }
 
+#ifdef LOG
 void rtp_socket_log(rtp_socket_log_level level, const char *fmt, ...) {
     time_t t = time(NULL);
     char *time_str;
@@ -575,9 +576,15 @@ void rtp_socket_log(rtp_socket_log_level level, const char *fmt, ...) {
     time_str[strlen(time_str) - 1] = 0; // remove \n
     fprintf(stderr, "%s  ", time_str);
 
-    // If an erron then stop
+    // If an error then stop
     if (level == rtp_socket_LOG_ERROR) {
         fprintf(stderr, "Fatal error while quiting; exiting immediately.\n");
         exit(-1);
     }
+    fprintf(stderr, "\n");
 }
+#else
+void rtp_socket_log(rtp_socket_log_level level, const char *fmt, ...) {
+
+}
+#endif

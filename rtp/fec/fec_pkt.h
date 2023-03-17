@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,8 +34,8 @@
  *
  */
 
-#ifndef FEC_PKT_H__
-#define FEC_PKT_H__
+#ifndef FEC_PKT_H_
+#define FEC_PKT_H_
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -44,7 +44,7 @@
 #define FEC_PKT_MAX_PACKET_SEQ 255
 
 /*M
- \emph{Structure representing a FEC packet header.}
+ // Structure representing a FEC packet header.}
  **/
 typedef struct fec_pkt_hdr_s {
     unsigned char magic; /* 8 bits magic: 0xfe  */
@@ -59,27 +59,27 @@ typedef struct fec_pkt_hdr_s {
 } fec_pkt_hdr_t;
 
 /*M
- \emph{Maximal size of a FEC packet.}
+ // Maximal size of a FEC packet.}
  **/
 #define FEC_PKT_SIZE 65535
 
 /*M
- \emph{Header size of a FEC packet header.}
+ // Header size of a FEC packet header.}
  **/
 #define FEC_PKT_HDR_SIZE 14
 
 /*M
- \emph{Maximal FEC packet payload size.}
+ // Maximal FEC packet payload size.}
  **/
 #define FEC_PKT_PAYLOAD_SIZE (FEC_PKT_SIZE - FEC_PKT_HDR_SIZE)
 
 /*M
- \emph{FEC packet magic byte.}
+ // FEC packet magic byte.}
  **/
 #define FEC_PKT_MAGIC 0xfe
 
 /*M
- \emph{Structure representing a FEC packet.}
+ // Structure representing a FEC packet.}
  **/
 typedef struct fec_pkt_s {
     fec_pkt_hdr_t hdr; /* packet header */
@@ -96,4 +96,4 @@ ssize_t fec_pkt_send(fec_pkt_t *pkt, int fd);
 ssize_t fec_pkt_sendto(fec_pkt_t *pkt, int fd, struct sockaddr *to, socklen_t tolen);
 int fec_pkt_read(fec_pkt_t *pkt, int fd);
 
-#endif /* FEC_PKT_H__ */
+#endif /* FEC_PKT_H_ */

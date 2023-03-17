@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -56,8 +56,8 @@
  * @endverbatim
  */
 
-#ifndef LIBRTP_RTCP_APP_H_
-#define LIBRTP_RTCP_APP_H_
+#ifndef RTCP_APP_H_
+#define RTCP_APP_H_
 
 #include "rtcp_header.h"
 
@@ -139,4 +139,4 @@ int rtcp_app_set_data(rtcp_app *packet, const void *data, size_t size);
  */
 void rtcp_app_clear_data(rtcp_app *packet);
 
-#endif // LIBRTP_RTCP_APP_H_
+#endif // RTCP_APP_H_

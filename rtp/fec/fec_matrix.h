@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,10 +34,10 @@
  *
  */
 
-#ifndef MATRIX_H__
-#define MATRIX_H__
+#ifndef FEC_MATRIX_H_
+#define FEC_MATRIX_H_
 
-#include "galois.h"
+#include "fec_galois.h"
 
 void matrix_mul(gf *a, gf *b, gf *c, int n, int k, int m);
 int matrix_inv(gf *a, int k);
@@ -47,4 +47,4 @@ void matrix_print(gf *a, int m, int n);
 /*C
  **/
 
-#endif /* MATRIX_H__ */
+#endif /* FEC_MATRIX_H_ */

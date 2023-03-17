@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,13 +34,12 @@
  *
  */
 
-#include "matrix.h"
 #include <stdio.h>
 #include <string.h>
 
-/*M
- \emph{Print a $m \times n$ matrix.}
- **/
+#include "fec_matrix.h"
+
+ // Print a m times n matrix.
 void matrix_print(gf *a, int m, int n) {
     int row;
     for (row = 0; row < m; row++) {
@@ -51,12 +50,8 @@ void matrix_print(gf *a, int m, int n) {
     }
 }
 
-/*M
- \emph{Matrix multiplication.}
-
- Computes $c = a * b$, with $a \in \gf{2^8}^{n \times k}, b \in
- \gf{2^8}^{k \times m}, c \in \gf{2^8}^{n \times m}$.
- **/
+ // Matrix multiplication.
+ //Computes $c = a * b$, with $a \in \gf{2^8}^{n \times k}, b \in \gf{2^8}^{k \times m}, c \in \gf{2^8}^{n \times m}$.
 void matrix_mul(gf *a, gf *b, gf *c, int n, int k, int m) {
     int row;
 
@@ -76,16 +71,11 @@ void matrix_mul(gf *a, gf *b, gf *c, int n, int k, int m) {
     }
 }
 
-/*M
- \emph{Computes the inverse of a matrix.}
-
- Computes the inverse of \verb|a| into \verb|a| using Gauss-Jordan
- elimination. Transform the matrix using pivoting and Gauss
- elimination to bring it into the form of the identity matrix, and
- apply the transformations to the identity matrix.
-
- Returns 0 on error, 1 on success
- **/
+ // Computes the inverse of a matrix.
+ // Computes the inverse of \verb|a| into \verb|a| using Gauss-Jordan
+ // elimination. Transform the matrix using pivoting and Gauss
+ // elimination to bring it into the form of the identity matrix, and apply the transformations to the identity matrix.
+ // Returns 0 on error, 1 on success
 int matrix_inv(gf *a, int k) {
     /*M
      Bookkeeping on the pivoting.
@@ -239,10 +229,10 @@ int matrix_inv(gf *a, int k) {
 }
 
 /*M
- \emph{Computes the inverse of a Vandermonde matrix.}
+ // Computes the inverse of a Vandermonde matrix.}
 
  \begin{definition}
- A \emph{Vandermonde matrix} of size $N \times N$ is completely
+ A // Vandermonde matrix} of size $N \times N$ is completely
  determined by $N$ arbitrary numbers $x_1, x_2, \dots, x_N$, in
  terms of which its $N^2$ components are the integer powers
  $x_i^{j-1}, i, j = 1, \dots, N$.

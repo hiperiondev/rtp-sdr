@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,12 +34,12 @@
  *
  */
 
-#ifndef LIBRTP_RTP_SOURCE_H_
-#define LIBRTP_RTP_SOURCE_H_
+#ifndef RTP_SOURCE_H_
+#define RTP_SOURCE_H_
 
 #include <stdint.h>
 
-#include "ntp.h"
+#include "rtp_ntp.h"
 
 /**
  * @brief The maximum acceptable gap in sequence numbers.
@@ -171,4 +171,4 @@ void rtp_source_update_jitter(rtp_source *s, uint32_t ts, uint32_t arrival);
  */
 void rtp_source_update_lsr(rtp_source *s, ntp_tv tc);
 
-#endif // LIBRTP_RTP_SOURCE_H_
+#endif // RTP_SOURCE_H_

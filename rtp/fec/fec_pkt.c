@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -42,11 +42,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pack.h"
-#include "fec-pkt.h"
+#include "fec_pack.h"
+#include "fec_pkt.h"
 
 /*M
- \emph{Initialize a FEC packet by filling common header fields.}
+ // Initialize a FEC packet by filling common header fields.}
 
  The version field is set to $1$ and the payload length to $0$.
  **/
@@ -80,7 +80,7 @@ static void fec_pkt_pack(fec_pkt_t *pkt) {
 }
 
 /*M
- \emph{Send a FEC packet to filedescriptor using send.}
+ // Send a FEC packet to filedescriptor using send.}
 
  Fills the packet data buffer with the packed header. Sequence
  number fields are not incremented, but have to be set by the application.
@@ -98,7 +98,7 @@ ssize_t fec_pkt_sendto(fec_pkt_t *pkt, int fd, struct sockaddr *to, socklen_t to
 }
 
 /*M
- \emph{Read a FEC packet from filedescriptor.}
+ // Read a FEC packet from filedescriptor.}
 
  Reads a FEC packet from the filedescriptor, and unpacks the header
  fields into the header structure.

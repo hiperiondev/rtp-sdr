@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -55,8 +55,8 @@
  * @endverbatim
  */
 
-#ifndef LIBRTP_RTP_HEADER_H_
-#define LIBRTP_RTP_HEADER_H_
+#ifndef RTP_HEADER_H_
+#define RTP_HEADER_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -181,4 +181,4 @@ int rtp_header_set_ext(rtp_header *header, uint16_t id, const uint32_t *data, ui
  */
 void rtp_header_clear_ext(rtp_header *header);
 
-#endif // LIBRTP_RTP_HEADER_H_
+#endif // RTP_HEADER_H_

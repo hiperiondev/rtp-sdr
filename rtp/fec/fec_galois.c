@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,100 +34,68 @@
  *
  */
 
-#include "galois.h"
+#include "fec_galois.h"
 
-/*M
- \emph{Polynomial representation of field elements.}
- **/
+// Polynomial representation of field elements.
 gf gf_polys[256] = { 0 };
 
-/*M
- \emph{Logarithmic representation of field elements.}
- **/
+// Logarithmic representation of field elements.
 gf gf_logs[256] = { 0 };
 
-/*M
- \emph{Precomputed multiplication table.}
- **/
+// Precomputed multiplication table.
 gf gf_mul[256][256] = { { 0 } };
 
-/*M
- \emph{Precomputed inverse table.}
- **/
+// Precomputed inverse table.
 gf gf_inv[256] = { 0 };
 
-/*M
- \emph{A primitive polynomial.}
+// A primitive polynomial.
 
- A primitive polynomial for \gf{2^8}, namely
- \[1 + x^2 + x^3 + x^4 + x^8\]
- **/
+// A primitive polynomial for \gf{2^8}, namely 1 + x^2 + x^3 + x^4 + x^8
 static char gf_prim_poly[] = "101110001";
 
-/*M
- \emph{Initialize data structures.}
- **/
+// Initialize data structures.}
 void gf_init(void) {
-    /*M
-     Notice that $x^8 = x^4 + x^3 + x^2 + 1$.
-     We will fill up the "eight" power of alpha from the prime
-     polynomial.
-     **/
+    // Notice that $x^8 = x^4 + x^3 + x^2 + 1$.
+    // We will fill up the "eight" power of alpha from the prime polynomial.
     gf_polys[8] = 0;
 
-    /*M
-     The first 8 elements are just alpha shifted to the left.
-     **/
+    // The first 8 elements are just alpha shifted to the left.
     int i;
     gf g = 1;
     for (i = 0; i < 8; i++, g <<= 1) {
         gf_polys[i] = g;
-        /*M
-         Remember logarithm by storing it into the logarithm lookup table.
-         **/
+
+        // Remember logarithm by storing it into the logarithm lookup table.
         gf_logs[gf_polys[i]] = i;
 
-        /*M
-         Fill up the eighth element.
-         **/
+        // Fill up the eighth element.
         if (gf_prim_poly[i] == '1')
             gf_polys[8] |= g;
     }
-    /*M
-     Remember logarithm of eigth element.
-     **/
+    // Remember logarithm of eight element.
     gf_logs[gf_polys[8]] = 8;
 
-    /*M
-     For each further element, $a^n = a^(n-1) * a$.
-     We just need to calculate the modulo \verb|gf_prim_poly|, which is of
-     degree $8$.
-     **/
+    // For each further element, $a^n = a^(n-1) * a$.
+    // We just need to calculate the modulo \verb|gf_prim_poly|, which is of degree $8$.
     g = 1 << 7;
     for (i = 9; i < 255; i++) {
         if (gf_polys[i - 1] >= g)
             /*M
-             $a^{n-1} * a > $ \verb|gf_prim_poly|, then
-             $a^n = a^{n-1} * a = a^8 + ... = a^4 + a^3 + a^2 + 1$.
+             // $a^{n-1} * a > $ \verb|gf_prim_poly|, then
+             // $a^n = a^{n-1} * a = a^8 + ... = a^4 + a^3 + a^2 + 1$.
              **/
             gf_polys[i] = gf_polys[8] ^ ((gf_polys[i - 1]) << 1);
         else
             gf_polys[i] = gf_polys[i - 1] << 1;
 
-        /*M
-         Remember logarithm.
-         **/
+        // Remember logarithm.
         gf_logs[gf_polys[i]] = i;
     }
 
-    /*M
-     The 0th element is undefined.
-     **/
+    // The 0th element is undefined.
     gf_logs[0] = 0xFF;
 
-    /*M
-     Compute multiplication table.
-     **/
+    // Compute multiplication table.
     for (i = 0; i < 256; i++) {
         int j;
         for (j = 0; j < 256; j++) {
@@ -141,28 +109,20 @@ void gf_init(void) {
             gf_mul[0][j] = gf_mul[j][0] = 0;
     }
 
-    /*M
-     Compute inverses.
-     **/
+    // Compute inverses.
     gf_inv[0] = 0;
     gf_inv[1] = 1;
     for (i = 2; i < 256; i++)
         gf_inv[i] = gf_polys[255 - gf_logs[i]];
 }
 
-/*M
- \emph{Computes addition of a row multiplied by a constant.}
-
- Computes $a = a + c * b$, $a, b \in \gf{2^8}^k, c \in \gf{2^8}$.
- **/
+// Computes addition of a row multiplied by a constant.
+// Computes $a = a + c * b$, $a, b \in \gf{2^8}^k, c \in \gf{2^8}$.
 void gf_add_mul(gf *a, gf *b, gf c, int k) {
     int i;
     for (i = 0; i < k; i++)
         a[i] = GF_ADD(a[i], GF_MUL(c, b[i]));
 }
-
-/*C
- **/
 
 #ifdef GALOIS_TEST
 #include <stdio.h>

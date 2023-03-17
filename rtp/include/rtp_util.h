@@ -3,11 +3,11 @@
  * * Project Site: https://github.com/hiperiondev/rtp-sdr *
  *
  * This is based on other projects:
- *    IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
- *    RTP: https://github.com/Daxbot/librtp/
- *    FEC: https://github.com/wesen/poc
+ *      IDEA: https://github.com/OpenResearchInstitute/ka9q-sdr (not use any code of this)
+ *       RTP: https://github.com/Daxbot/librtp/
+ *       FEC: https://github.com/wesen/poc
  *    SOCKET: https://github.com/njh/mast
- *    Others: see individual files
+ *    OTHERS: see individual files
  *
  *    please contact their authors for more information.
  *
@@ -34,8 +34,8 @@
  *
  */
 
-#ifndef LIBRTP_UTIL_H_
-#define LIBRTP_UTIL_H_
+#ifndef RTP_UTIL_H_
+#define RTP_UTIL_H_
 
 #include <stdint.h>
 
@@ -111,4 +111,4 @@ void write_u16(uint8_t *buffer, uint16_t value);
  */
 uint16_t read_u16(const uint8_t *buffer);
 
-#endif // LIBRTP_UTIL_H_
+#endif // RTP_UTIL_H_
