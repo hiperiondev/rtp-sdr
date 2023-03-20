@@ -42,6 +42,11 @@
 
 //#define LOG
 
+enum {
+    DO_BIND_SOCKET,
+    DONT_BIND_SOCKET
+};
+
 typedef enum {
     rtp_socket_LOG_DEBUG,
     rtp_socket_LOG_INFO,

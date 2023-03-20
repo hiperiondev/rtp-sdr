@@ -40,6 +40,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 #include "rtp_sdr_iq.h"
 #include "rtp_header.h"
@@ -47,34 +49,55 @@
 
 #define RTP_PACKET_LENGTH 4096
 
-uint8_t rcp_iq_init(session_iq_t *session, bool transmit, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
-bool use_fec, iq_t *buffer, size_t buffer_size) {
-    const int32_t frame_samples = (sample_rate * duration) / 1000;
+static void _isleep(int usec) {
+    int diff;
+    struct timeval start, now;
 
-    (*session)->frame_samples = frame_samples;
+    gettimeofday(&start, NULL);
+    diff = 0;
+    while (diff < usec) {
+        /* If enough time to sleep, otherwise, busywait */
+        if (usec - diff > 200) {
+            usleep(usec - 20);
+        }
+        gettimeofday(&now, NULL);
+        diff = now.tv_sec - start.tv_sec;
+        diff *= 1000000;
+        diff += now.tv_usec - start.tv_usec;
+    }
+}
+
+uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration,
+        uint32_t host, uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty) {
+
+    (*session)->tx_enabled = false;
+    (*session)->tx_frame_samples = (tx_sample_rate * duration) / 1000;
+    (*session)->rx_frame_samples = (rx_sample_rate * duration) / 1000;
     (*session)->use_fec = use_fec;
     (*session)->type = type;
-    (*session)->sample_rate = sample_rate;
-    (*session)->frequency = frequency;
+    (*session)->rx_sample_rate = rx_sample_rate;
+    (*session)->rx_sample_rate = rx_sample_rate;
+    (*session)->tx_frequency = malloc(sizeof(double) * tx_qty);
+    (*session)->rx_frequency = malloc(sizeof(double) * rx_qty);
 
     (*session)->host = host;
     (*session)->port = port;
 
-    (*session)->iq_buffer = rtp_sdr_rbuf_init(buffer, buffer_size, type);
+    (*session)->tx_iq_buffer = rtp_sdr_rbuf_init(tx_buffer, buffer_size, type);
+    (*session)->rx_iq_buffer = rtp_sdr_rbuf_init(rx_buffer, buffer_size, type);
 
-    if (transmit) {
-        (*session)->header = rtp_header_create();
-        rtp_header_init((*session)->header, type, rand(), rand(), rand());
-    }
+    (*session)->rx_header = NULL;
+    (*session)->tx_header = rtp_header_create();
+    rtp_header_init((*session)->tx_header, type, rand(), rand(), rand());
 
     return RTP_SDR_OK;
 }
 
 void rcp_iq_deinit(session_iq_t *session) {
-    rtp_sdr_rbuf_free((*session)->iq_buffer);
+    rtp_sdr_rbuf_free((*session)->tx_iq_buffer);
+    rtp_sdr_rbuf_free((*session)->rx_iq_buffer);
 
-    if((*session)->header != NULL)
-        rtp_header_free((*session)->header);
+    rtp_header_free((*session)->tx_header);
 
     free(*session);
 }
@@ -82,25 +105,33 @@ void rcp_iq_deinit(session_iq_t *session) {
 uint8_t rcp_iq_transmit(session_iq_t *session) {
     int32_t n;
     uint8_t data[RTP_PACKET_LENGTH];
+    struct timeval start, now;
+    int header_size;
+    uint32_t iq_len;
+    int packet_len = 0;
 
-    (*session)->header->seq += 1;
-    (*session)->header->ts += (*session)->frame_samples;
+    gettimeofday(&start, NULL);
 
-    int header_size = rtp_header_serialize((*session)->header, data, sizeof(data));
-    const uint32_t iq_len = sizeof(RTP_PACKET_LENGTH - header_size) / 2;
+    (*session)->tx_header->seq += 1;
+    (*session)->tx_header->ts += (*session)->tx_frame_samples;
+
+    header_size = rtp_header_serialize((*session)->tx_header, data, sizeof(data));
+    iq_len = sizeof(RTP_PACKET_LENGTH - header_size) / 2;
     iq_t iq_frame[iq_len];
-    if (rtp_sdr_rbuf_peek((*session)->iq_buffer, iq_frame, iq_len) == RTP_SDR_RBUF_ERROR)
+    if (rtp_sdr_rbuf_peek((*session)->tx_iq_buffer, iq_frame, iq_len) == RTP_SDR_RBUF_ERROR)
         return RTP_SDR_ERROR;
 
     switch ((*session)->type) {
         case IQ_PT8:
-            for (n = 0; n < iq_len; n++) {
+            packet_len = iq_len;
+            for (n = 0; n < packet_len; n++) {
                 data[header_size++] = iq_frame[n].i.s8;
                 data[header_size++] = iq_frame[n].q.s8;
             }
             break;
         case IQ_PT16:
-            for (n = 0; n < iq_len / 2; n++) {
+            packet_len = iq_len / 2;
+            for (n = 0; n < packet_len; n++) {
                 write_u16(data + header_size, iq_frame[n].i.s16);
                 header_size += 2;
                 write_u16(data + header_size, iq_frame[n].q.s16);
@@ -109,7 +140,8 @@ uint8_t rcp_iq_transmit(session_iq_t *session) {
             break;
         case IQ_PT24:
         case IQ_PT32:
-            for (n = 0; n < iq_len / 4; n++) {
+            packet_len = iq_len / 4;
+            for (n = 0; n < packet_len; n++) {
                 write_s24_s32(data + header_size, iq_frame[n].i.s24_s32);
                 header_size += 4;
                 write_s24_s32(data + header_size, iq_frame[n].q.s24_s32);
@@ -122,6 +154,26 @@ uint8_t rcp_iq_transmit(session_iq_t *session) {
     if (error < 0) {
         fprintf(stderr, "Failed to send packet: %s\n", strerror(errno));
         return RTP_SDR_ERROR;
+    }
+
+    // pause by rate
+    gettimeofday(&now, NULL);
+    double rate_now;
+    long duration_now;
+    duration_now = (now.tv_sec - start.tv_sec);
+    duration_now *= 1000000;
+    duration_now += now.tv_usec - start.tv_usec;
+    rate_now = packet_len * 8 * 1000;
+    rate_now = rate_now / duration_now;
+    if (rate_now > (*session)->tx_sample_rate) {
+        long int_delay = packet_len * 8 * 1000;
+        int_delay = int_delay / (*session)->tx_sample_rate;
+        int_delay = int_delay - duration_now;
+
+        if ((int_delay <= 0) || (int_delay > 10000000))
+            fprintf(stderr, "!!! BIG delay !!!  %ld\n", int_delay);
+        if (int_delay > 0)
+            _isleep(int_delay);
     }
 
     return RTP_SDR_OK;
@@ -138,13 +190,13 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
         return RTP_SDR_ERROR;
     }
 
-    (*session)->header = rtp_header_create();
-    if (rtp_header_parse((*session)->header, data, packet_len) < 0) {
+    (*session)->rx_header = rtp_header_create();
+    if (rtp_header_parse((*session)->rx_header, data, packet_len) < 0) {
         fprintf(stderr, "Bad packet - dropping\n");
         return RTP_SDR_ERROR;
     }
 
-    int header_size = rtp_header_size((*session)->header);
+    int header_size = rtp_header_size((*session)->rx_header);
     uint8_t *payload = data + header_size;
     int payload_size = packet_len - header_size;
 
@@ -153,7 +205,7 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
             for (n = 0; n < payload_size; n++) {
                 iq_data.i.s8 = payload[pos++];
                 iq_data.i.s8 = payload[pos++];
-                rtp_sdr_rbuf_put((*session)->iq_buffer, iq_data);
+                rtp_sdr_rbuf_put((*session)->rx_iq_buffer, iq_data);
             }
             break;
         case IQ_PT16:
@@ -162,7 +214,7 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
                 pos += 2;
                 iq_data.q.s16 = read_u16(payload + pos);
                 pos += 2;
-                rtp_sdr_rbuf_put((*session)->iq_buffer, iq_data);
+                rtp_sdr_rbuf_put((*session)->rx_iq_buffer, iq_data);
             }
             break;
         case IQ_PT24:
@@ -171,7 +223,7 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
                 pos += 4;
                 iq_data.q.s24_s32 = read_s24(payload + pos);
                 pos += 4;
-                rtp_sdr_rbuf_put((*session)->iq_buffer, iq_data);
+                rtp_sdr_rbuf_put((*session)->rx_iq_buffer, iq_data);
             }
             break;
         case IQ_PT32:
@@ -180,15 +232,35 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
                 pos += 4;
                 iq_data.q.s24_s32 = read_u32(payload + pos);
                 pos += 4;
-                rtp_sdr_rbuf_put((*session)->iq_buffer, iq_data);
+                rtp_sdr_rbuf_put((*session)->rx_iq_buffer, iq_data);
             }
             break;
         default:
             return RTP_SDR_ERROR;
     }
 
-    rtp_header_free((*session)->header);
-    (*session)->header = NULL;
+    rtp_header_free((*session)->rx_header);
+    (*session)->rx_header = NULL;
 
     return RTP_SDR_OK;
+}
+
+void* rcp_iq_transmit_handler(void *arg) {
+    session_iq_t *session = (session_iq_t*) arg;
+
+    while (1) {
+        while ((*session)->tx_enabled) {
+            if(rcp_iq_receive(session) == RTP_SDR_ERROR)
+                return NULL;
+        }
+
+        usleep(1000);
+    }
+
+    return NULL;
+}
+
+void* rcp_iq_receive_handler(void *arg) {
+
+    return NULL;
 }

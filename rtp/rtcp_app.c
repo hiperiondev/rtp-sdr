@@ -87,11 +87,11 @@ int rtcp_app_serialize(const rtcp_app *packet, uint8_t *buffer, size_t size) {
 
     const size_t packet_size = rtcp_app_size(packet);
     if (size < packet_size)
-        return -1;
+        return RTCP_ERROR;
 
     memset(buffer, 0, packet_size);
     if (rtcp_header_serialize(&packet->header, buffer, size) < 0)
-        return -1;
+        return RTCP_ERROR;
 
     write_u32(buffer + 4, packet->ssrc);
     write_u32(buffer + 8, packet->name);

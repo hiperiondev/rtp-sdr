@@ -73,11 +73,6 @@
 #endif
 #endif
 
-enum {
-    DO_BIND_SOCKET,
-    DONT_BIND_SOCKET
-};
-
 static int _create_socket(rtp_socket_t *sock, int flags, const char *address, const char *port) {
     struct addrinfo hints, *res, *cur;
     int error = -1;
@@ -449,7 +444,7 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
         rtp_socket_debug("Joining multicast group");
         if (_join_group(sock)) {
             rtp_socket_close(sock);
-            return -2;
+            return RTP_ERROR;
         }
 
     }

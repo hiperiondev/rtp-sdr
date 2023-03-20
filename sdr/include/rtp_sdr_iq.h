@@ -86,39 +86,50 @@ typedef enum SAMPLE_RATE {
  *
  */
 typedef struct session_iq_s {
-             bool use_fec;       /**< use fec correction frame */
-       rtp_header *header;       /**< rtp header */
-          int32_t frame_samples; /**< samples per frame */
-         uint32_t frame_size;    /**< frame size */
-    rbuf_handle_t iq_buffer;     /**< i/q circular buffer */
-        iq_type_t type;          /**< rtp payload type (with marker stripped) */
-           double frequency;     /**< rx/tx lo frequency */
-    sample_rate_t sample_rate;   /**< nominal sampling rate */
-
-         uint16_t port;          /**< port */
-         uint32_t host;          /**< ip */
-     rtp_socket_t socket;        /**< socket */
-} *session_iq_t;                 /**< i/q session data type */
+             bool tx_enabled;       /**< enable tx */
+             bool use_fec;          /**< use fec correction frame */
+       rtp_header *tx_header;       /**< tx rtp header */
+       rtp_header *rx_header;       /**< rx rtp header */
+          int32_t tx_frame_samples; /**< tx samples per frame */
+          int32_t rx_frame_samples; /**< rx samples per frame */
+         uint32_t frame_size;       /**< frame size */
+    rbuf_handle_t tx_iq_buffer;     /**< tx i/q circular buffer */
+    rbuf_handle_t rx_iq_buffer;     /**< rx i/q circular buffer */
+        iq_type_t type;             /**< rtp payload type (with marker stripped) */
+          uint8_t tx_qty;           /**< quantity of transmitters */
+          uint8_t rx_qty;           /**< quantity of receivers */
+           double *tx_frequency;    /**< tx lo frequency */
+           double *rx_frequency;    /**< rx lo frequency */
+    sample_rate_t tx_sample_rate;   /**< tx nominal sampling rate */
+    sample_rate_t rx_sample_rate;   /**< rx nominal sampling rate */
+         uint16_t port;             /**< port */
+         uint32_t host;             /**< ip */
+     rtp_socket_t socket;           /**< socket */
+} *session_iq_t;                    /**< i/q session data type */
 
 /**
- * @fn uint8_t rcp_iq_init(rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration,
-       uint32_t host, uint16_t port, bool use_fec, iq_t *buffer, size_t buffer_size))
+ * @fn uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration, uint32_t host,
+        uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty)
  * @brief
  *
  * @param session
  * @param type
  * @param frequency
- * @param sample_rate
+ * @param tx_sample_rate
+ * @param rx_sample_rate
  * @param duration
  * @param host
  * @param port
  * @param use_fec
- * @param buffer
+ * @param tx_buffer
+ * @param rx_buffer
  * @param buffer_size
+ * @param tx_qty
+ * @param rx_qty
  * @return
  */
-uint8_t rcp_iq_init(session_iq_t *session, bool transmit, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
-bool use_fec, iq_t *buffer, size_t buffer_size);
+uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration, uint32_t host,
+        uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty);
 
 /**
  * @fn void rcp_iq_deinit(session_iq_t *session)
@@ -139,7 +150,7 @@ void rcp_iq_deinit(session_iq_t *session);
 uint8_t rcp_iq_transmit(session_iq_t *session);
 
 /**
- * @fn uint8_t rcp_iq_receive(session_iq_t *session))
+ * @fn uint8_t rcp_iq_receive(session_iq_t *session)
  * @brief
  *
  * @param session
@@ -147,5 +158,22 @@ uint8_t rcp_iq_transmit(session_iq_t *session);
  * @return
  */
 uint8_t rcp_iq_receive(session_iq_t *session);
+
+/**
+ * @fn void* rcp_iq_transmit_handler(void *arg)
+ * @brief
+ *
+ * @param arg
+ */
+void* rcp_iq_transmit_handler(void *arg);
+
+/**
+ * @fn void* rcp_iq_receive_handler(void *arg)
+ * @brief
+ *
+ * @param arg
+ */
+void* rcp_iq_receive_handler(void *arg);
+
 
 #endif /* RTP_IQ_H_ */

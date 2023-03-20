@@ -203,7 +203,7 @@ int rtp_header_add_csrc(rtp_header *header, uint32_t csrc) {
             return RTP_ERROR;
 
         if (rtp_header_find_csrc(header, csrc) != -1)
-            return -1;
+            return RTP_ERROR;
 
         header->cc += 1;
 
