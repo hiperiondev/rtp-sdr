@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "rtp_source.h"
+#include "rtp_util.h"
 
 /**
  * @brief RTP sequence number rollover value.
@@ -106,7 +107,7 @@ int rtp_source_update_seq(rtp_source *s, uint16_t seq) {
             s->max_seq = seq;
         }
 
-        return -1;
+        return RTP_ERROR;
     }
 #endif
 
@@ -128,12 +129,12 @@ int rtp_source_update_seq(rtp_source *s, uint16_t seq) {
         }
         else {
             s->bad_seq = (seq + 1) & (LIBRTP_SEQ_MOD - 1);
-            return -2;
+            return RTP_ERROR;
         }
     }
 
     s->received++;
-    return 0;
+    return RTP_OK;
 }
 
 void rtp_source_update_lost(rtp_source *s) {

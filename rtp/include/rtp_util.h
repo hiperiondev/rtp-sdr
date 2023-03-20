@@ -40,6 +40,16 @@
 #include <stdint.h>
 
 /**
+ * @enum RTP_ERROR
+ * @brief
+ *
+ */
+enum RTP_ERROR {
+    RTP_OK    = 0, /**< OK */
+    RTP_ERROR = -1 /**< ERROR */
+};
+
+/**
  * @brief Write a 24-bit value to a buffer (big-endian).
  *
  * @param [out] buffer - buffer to write to.
@@ -55,7 +65,7 @@ void write_u24(uint8_t *buffer, uint32_t value);
  * @param [in] value - value to write.
  * @private
  */
-void write_s24(uint8_t *buffer, int32_t value);
+void write_s24_s32(uint8_t *buffer, int32_t value);
 
 /**
  * @brief Write a 32-bit value to a buffer (big-endian).

@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -62,9 +63,7 @@
 #include <time.h>
 
 #include "rtp_socket.h"
-
-#define TRUE  1
-#define FALSE 0
+#include "rtp_util.h"
 
 // Added to ensure compilation with KAME
 #ifndef IPV6_ADD_MEMBERSHIP
@@ -149,7 +148,7 @@ static int _is_multicast(struct sockaddr_storage *addr) {
             break;
 
         default: {
-            return -1;
+            return RTP_ERROR;
         }
     }
 }
@@ -161,18 +160,18 @@ static int _sockaddr_len(sa_family_t family) {
         case AF_INET6:
             return sizeof(struct sockaddr_in6);
         default:
-            return -1;
+            return RTP_ERROR;
     }
 }
 
 static int _get_interface_address(const char *ifname, sa_family_t family, struct sockaddr_storage *addr) {
     struct ifaddrs *addrs, *cur;
     int retval = -1;
-    int foundAddress = FALSE;
+    int foundAddress = false;
 
     if (ifname == NULL || strlen(ifname) < 1) {
         rtp_socket_error("No interface given");
-        return -1;
+        return RTP_ERROR;
     }
 
     // Get a linked list of all the interfaces
@@ -189,7 +188,7 @@ static int _get_interface_address(const char *ifname, sa_family_t family, struct
                 size_t addr_len = _sockaddr_len(cur->ifa_addr->sa_family);
                 if (addr_len > 0) {
                     memcpy(addr, cur->ifa_addr, addr_len);
-                    foundAddress = TRUE;
+                    foundAddress = true;
                 }
                 break;
             }
@@ -203,7 +202,7 @@ static int _get_interface_address(const char *ifname, sa_family_t family, struct
 
 static int _choose_best_interface(sa_family_t family, char *ifname) {
     struct ifaddrs *addrs, *cur;
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     // Get a linked list of all the interfaces
     retval = getifaddrs(&addrs);
@@ -259,7 +258,7 @@ static void _format_sockaddr(struct sockaddr_storage *ss, char *dst, socklen_t s
 static int _lookup_interface(rtp_socket_t *sock, const char *ifname) {
     char chosen_ifname[IFNAMSIZ];
     char ipaddr[INET6_ADDRSTRLEN];
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     sock->if_index = 0;
 
@@ -278,7 +277,7 @@ static int _lookup_interface(rtp_socket_t *sock, const char *ifname) {
     if (sock->if_index == 0) {
         if (errno == ENXIO) {
             rtp_socket_error("Network interface not found: %s", ifname);
-            return -1;
+            return RTP_ERROR;
         }
         else {
             rtp_socket_error("Error looking up interface: %s", strerror(errno));
@@ -321,7 +320,7 @@ static void _set_imr(rtp_socket_t *sock) {
 }
 
 static int _join_group(rtp_socket_t *sock) {
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     _set_imr(sock);
 
@@ -340,13 +339,13 @@ static int _join_group(rtp_socket_t *sock) {
     }
 
     if (retval == 0)
-        sock->joined_group = TRUE;
+        sock->joined_group = true;
 
     return retval;
 }
 
 static int _leave_group(rtp_socket_t *sock) {
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     _set_imr(sock);
 
@@ -368,7 +367,7 @@ static int _leave_group(rtp_socket_t *sock) {
 }
 
 static int _set_multicast_interface(rtp_socket_t *sock) {
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     _set_imr(sock);
 
@@ -390,7 +389,7 @@ static int _set_multicast_interface(rtp_socket_t *sock) {
 }
 
 static int _set_multicast_hops(rtp_socket_t *sock, int hops) {
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     switch (sock->dest_addr.ss_family) {
         case AF_INET:
@@ -410,7 +409,7 @@ static int _set_multicast_hops(rtp_socket_t *sock, int hops) {
 }
 
 static int _set_multicast_loopback(rtp_socket_t *sock, char loop) {
-    int retval = -1;
+    int retval = RTP_ERROR;
 
     switch (sock->dest_addr.ss_family) {
         case AF_INET:
@@ -438,7 +437,7 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
     rtp_socket_info("Opening socket: %s/%s", address, port);
     if ((err = _create_socket(sock, DO_BIND_SOCKET, address, port))) {
         rtp_socket_error("Failed to open socket for receiving.");
-        return -1;
+        return RTP_ERROR;
     }
 
     // Work out what interface to receive packets on
@@ -458,7 +457,7 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
         rtp_socket_warn("Error checking if address is multicast");
     }
 
-    return 0;
+    return RTP_OK;
 }
 
 int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *port, const char *ifname) {
@@ -470,7 +469,7 @@ int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *po
     rtp_socket_info("Opening transmit socket: %s/%s", address, port);
     if (_create_socket(sock, DONT_BIND_SOCKET, address, port)) {
         rtp_socket_error("Failed to open socket for sending.");
-        return -1;
+        return RTP_ERROR;
     }
 
     // Work out what interface to send packets on
@@ -481,13 +480,13 @@ int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *po
     if (is_multicast == 1) {
         _set_multicast_interface(sock);
         _set_multicast_hops(sock, 255);
-        _set_multicast_loopback(sock, TRUE);
+        _set_multicast_loopback(sock, true);
     }
     else if (is_multicast != 0) {
         rtp_socket_warn("Error checking if address is multicast");
     }
 
-    return 0;
+    return RTP_OK;
 }
 
 int rtp_socket_recv(rtp_socket_t *sock, void *data, unsigned int len) {
@@ -506,12 +505,12 @@ int rtp_socket_recv(rtp_socket_t *sock, void *data, unsigned int len) {
     // Check return value
     if (retval == -1) {
         perror("select()");
-        return -1;
+        return RTP_ERROR;
 
     }
     else if (retval == 0) {
         rtp_socket_warn("Timed out waiting for packet after %ld seconds", timeout.tv_sec);
-        return 0;
+        return RTP_OK;
     }
 
     // Packet is waiting - read it in

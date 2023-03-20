@@ -66,7 +66,7 @@ int rtcp_report_serialize(const rtcp_report *report, uint8_t *buffer, size_t siz
     write_u32(buffer, report->ssrc);
 
     buffer[4] = report->fraction;
-    write_s24(buffer + 5, report->lost);
+    write_s24_s32(buffer + 5, report->lost);
 
     write_u32(buffer + 8, report->last_seq);
     write_u32(buffer + 12, report->jitter);

@@ -44,7 +44,7 @@ void write_u24(uint8_t *buffer, uint32_t value) {
     buffer[2] = (value >> 0) & 0xff;
 }
 
-void write_s24(uint8_t *buffer, int32_t value) {
+void write_s24_s32(uint8_t *buffer, int32_t value) {
     uint32_t u;
     memcpy(&u, &value, 4);
     write_u24(buffer, u);

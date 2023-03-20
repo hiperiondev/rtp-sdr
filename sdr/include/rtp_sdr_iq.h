@@ -44,43 +44,108 @@
 #include "rtp_socket.h"
 #include "rtp_sdr_rbuf.h"
 
+/**
+ * @enum RTP_SDR_ERROR
+ * @brief rtp_sdr error types
+ *
+ */
+enum RTP_SDR_ERROR {
+    RTP_SDR_OK = 0,    /**< OK */
+    RTP_SDR_ERROR = -1 /**< ERROR */
+};
+
+/**
+ * @enum IQ_TYPE
+ * @brief i/q type data type
+ *
+ */
 typedef enum IQ_TYPE {
-    IQ_PT8  = 97, // NON-standard payload type for raw I/Q stream - signed 8 bit version
-    IQ_PT16 = 98, // NON-standard payload type for raw I/Q stream - signed 16 bit version
-    IQ_PT24 = 99  // NON-standard payload type for raw I/Q stream - signed 24 bit version
-} iq_type_t;
+    IQ_PT8  = 97, /**< NON-standard payload type for raw I/Q stream - signed 8 bit version */
+    IQ_PT16 = 98, /**< NON-standard payload type for raw I/Q stream - signed 16 bit version */
+    IQ_PT24 = 99, /**< NON-standard payload type for raw I/Q stream - signed 24 bit version */
+    IQ_PT32 = 100 /**< NON-standard payload type for raw I/Q stream - signed 32 bit version */
+} iq_type_t;      /**< i/q type data type */
 
+/**
+ * @enum SAMPLE_RATE
+ * @brief sample rate
+ *
+ */
 typedef enum SAMPLE_RATE {
-    SR_48K   = 48000,
-    SR_96K   = 96000,
-    SR_192K  = 192000,
-    SR_384K  = 384000,
-    SR_768K  = 768000,
-    SR_1536K = 1536000
-} sample_rate_t;
+    SR_48K   = 48000,  /**< sample rate 48000 bps */
+    SR_96K   = 96000,  /**< sample rate 96000 bps */
+    SR_192K  = 192000, /**< sample rate 192000 bps */
+    SR_384K  = 384000, /**< sample rate 384000 bps */
+    SR_768K  = 768000, /**< sample rate 768000 bps */
+    SR_1536K = 1536000 /**< sample rate 1536000 bps */
+} sample_rate_t;       /**< sample rate data type */
 
-// One for each session being recorded
+/**
+ * @struct session_iq_s
+ * @brief i/q session
+ *
+ */
 typedef struct session_iq_s {
-            bool use_fec;
-      rtp_header *header;     // RTP header
-      union {
-           int8_t *_8;
-          int16_t *_16;
-          int32_t *_24;
-      } frame;                 // RTP frame buffer
-      rbuf_handle_t iq_buffer; // iq circular buffer;
-       iq_type_t type;         // RTP payload type (with marker stripped)
-          double frequency;    // rx/tx LO frequency
-   sample_rate_t sample_rate;  // nominal sampling rate
+             bool use_fec;       /**< use fec correction frame */
+       rtp_header *header;       /**< rtp header */
+          int32_t frame_samples; /**< samples per frame */
+         uint32_t frame_size;    /**< frame size */
+    rbuf_handle_t iq_buffer;     /**< i/q circular buffer */
+        iq_type_t type;          /**< rtp payload type (with marker stripped) */
+           double frequency;     /**< rx/tx lo frequency */
+    sample_rate_t sample_rate;   /**< nominal sampling rate */
 
-        uint16_t port;         // port
-        uint32_t host;         // IP
+         uint16_t port;          /**< port */
+         uint32_t host;          /**< ip */
+     rtp_socket_t socket;        /**< socket */
+} *session_iq_t;                 /**< i/q session data type */
 
-        rtp_socket_t socket;   // socket
-} *session_iq_t;
-
+/**
+ * @fn uint8_t rcp_iq_init(rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration,
+       uint32_t host, uint16_t port, bool use_fec, iq_t *buffer, size_t buffer_size))
+ * @brief
+ *
+ * @param session
+ * @param type
+ * @param frequency
+ * @param sample_rate
+ * @param duration
+ * @param host
+ * @param port
+ * @param use_fec
+ * @param buffer
+ * @param buffer_size
+ * @return
+ */
 uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
-        bool use_fec, iq_t *buffer, size_t buffer_size);
-   void rcp_iq_deinit(session_iq_t *session);
+bool use_fec, iq_t *buffer, size_t buffer_size);
+
+/**
+ * @fn void rcp_iq_deinit(session_iq_t *session)
+ * @brief
+ *
+ * @param session
+ */
+void rcp_iq_deinit(session_iq_t *session);
+
+/**
+ * @fn uint8_t  rcp_iq_transmit(session_iq_t *session, iq_t data)
+ * @brief
+ *
+ * @param session
+ * @param data
+ * @return
+ */
+uint8_t rcp_iq_receive(session_iq_t *session, iq_t *data);
+
+/**
+ * @fn uint8_t rcp_iq_receive(session_iq_t*, iq_t*)
+ * @brief
+ *
+ * @param session
+ * @param data
+ * @return
+ */
+uint8_t rcp_iq_receive(session_iq_t *session, iq_t *data);
 
 #endif /* RTP_IQ_H_ */

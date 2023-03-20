@@ -91,7 +91,7 @@ int rtp_header_serialize(const rtp_header *header, uint8_t *buffer, size_t size)
 
     const size_t header_size = rtp_header_size(header);
     if (size < header_size)
-        return -1;
+        return RTP_ERROR;
 
     // Clear existing data
     memset(buffer, 0, header_size);
@@ -133,17 +133,17 @@ int rtp_header_parse(rtp_header *header, const uint8_t *buffer, size_t size) {
 
     // Check initial size
     if (size < 12)
-        return -1;
+        return RTP_ERROR;
 
     // Version must be 2
     header->version = (unsigned) ((buffer[0] >> 6) & 0x3);
     if (header->version != 2)
-        return -1;
+        return RTP_ERROR;
 
     // Payload type must not be in the range [72-95]
     header->pt = (unsigned) (buffer[1] & 0x7f);
     if (header->pt < 96 && header->pt > 71)
-        return -1;
+        return RTP_ERROR;
 
     header->x = (unsigned) ((buffer[0] >> 4) & 0x1);
     header->cc = (unsigned) (buffer[0] & 0x7);
@@ -154,7 +154,7 @@ int rtp_header_parse(rtp_header *header, const uint8_t *buffer, size_t size) {
 
     // Recheck size
     if (size < rtp_header_size(header))
-        return -1;
+        return RTP_ERROR;
 
     // Contributing source IDs
     if (header->cc) {
@@ -177,7 +177,7 @@ int rtp_header_parse(rtp_header *header, const uint8_t *buffer, size_t size) {
             header->ext_data[i] = read_u32(ext_data + (4 * i));
     }
 
-    return 0;
+    return RTP_OK;
 }
 
 int rtp_header_find_csrc(rtp_header *header, uint32_t csrc) {
@@ -188,7 +188,7 @@ int rtp_header_find_csrc(rtp_header *header, uint32_t csrc) {
             return i;
     }
 
-    return -1;
+    return RTP_ERROR;
 }
 
 int rtp_header_add_csrc(rtp_header *header, uint32_t csrc) {
@@ -200,7 +200,7 @@ int rtp_header_add_csrc(rtp_header *header, uint32_t csrc) {
     }
     else {
         if (header->cc == 0xff)
-            return -1;
+            return RTP_ERROR;
 
         if (rtp_header_find_csrc(header, csrc) != -1)
             return -1;
@@ -213,7 +213,7 @@ int rtp_header_add_csrc(rtp_header *header, uint32_t csrc) {
 
     header->csrc[header->cc - 1] = csrc;
 
-    return 0;
+    return RTP_OK;
 }
 
 void rtp_header_remove_csrc(rtp_header *header, uint32_t csrc) {
@@ -243,7 +243,7 @@ int rtp_header_set_ext(rtp_header *header, uint16_t id, const uint32_t *data, ui
     assert(data != NULL);
 
     if (header->ext_data)
-        return -1;
+        return RTP_ERROR;
 
     const size_t size = 4 * count;
     header->ext_data = (uint32_t*) malloc(size);
@@ -254,7 +254,7 @@ int rtp_header_set_ext(rtp_header *header, uint16_t id, const uint32_t *data, ui
     header->ext_count = count;
     memcpy(header->ext_data, data, size);
 
-    return 0;
+    return RTP_OK;
 }
 
 void rtp_header_clear_ext(rtp_header *header) {

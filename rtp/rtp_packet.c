@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "rtp_packet.h"
+#include "rtp_util.h"
 
 rtp_packet* rtp_packet_create(void) {
     rtp_packet *packet = (rtp_packet*) malloc(sizeof(rtp_packet));
@@ -85,7 +86,7 @@ int rtp_packet_serialize(const rtp_packet *packet, uint8_t *buffer, size_t size)
 
     const size_t packet_size = rtp_packet_size(packet);
     if (size < packet_size)
-        return -1;
+        return RTP_ERROR;
 
     // Add header
     int offset = rtp_header_serialize(packet->header, buffer, size);
@@ -103,12 +104,12 @@ int rtp_packet_parse(rtp_packet *packet, const uint8_t *buffer, size_t size) {
     assert(buffer != NULL);
 
     if (rtp_header_parse(packet->header, buffer, size) < 0)
-        return -1;
+        return RTP_ERROR;
 
     const size_t header_size = rtp_header_size(packet->header);
     rtp_packet_set_payload(packet, buffer + header_size, size - header_size);
 
-    return 0;
+    return RTP_OK;
 }
 
 int rtp_packet_set_payload(rtp_packet *packet, const void *data, size_t size) {
@@ -116,11 +117,11 @@ int rtp_packet_set_payload(rtp_packet *packet, const void *data, size_t size) {
     assert(data != NULL);
 
     if (packet->payload_data)
-        return -1;
+        return RTP_ERROR;
 
     packet->payload_data = malloc(size);
     if (!packet->payload_data)
-        return -1;
+        return RTP_ERROR;
 
     packet->payload_size = size;
     memcpy(packet->payload_data, data, size);
