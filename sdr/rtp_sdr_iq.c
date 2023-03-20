@@ -187,13 +187,13 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
     int packet_len = rtp_socket_recv(&((*session)->socket), data, sizeof(data));
     if (packet_len < 0) {
         fprintf(stderr, "Failed to receive packet: %s\n", strerror(errno));
-        return RTP_SDR_ERROR;
+        return RTP_SDR_WARNING;
     }
 
     (*session)->rx_header = rtp_header_create();
     if (rtp_header_parse((*session)->rx_header, data, packet_len) < 0) {
         fprintf(stderr, "Bad packet - dropping\n");
-        return RTP_SDR_ERROR;
+        return RTP_SDR_WARNING;
     }
 
     int header_size = rtp_header_size((*session)->rx_header);
@@ -250,7 +250,7 @@ void* rcp_iq_transmit_handler(void *arg) {
 
     while (1) {
         while ((*session)->tx_enabled) {
-            if(rcp_iq_receive(session) == RTP_SDR_ERROR)
+            if (rcp_iq_transmit(session) == RTP_SDR_ERROR)
                 return NULL;
         }
 
@@ -261,6 +261,16 @@ void* rcp_iq_transmit_handler(void *arg) {
 }
 
 void* rcp_iq_receive_handler(void *arg) {
+    session_iq_t *session = (session_iq_t*) arg;
+
+    while (1) {
+        while ((*session)->tx_enabled) {
+            if (rcp_iq_receive(session) == RTP_SDR_ERROR)
+                return NULL;
+        }
+
+        usleep(1000);
+    }
 
     return NULL;
 }

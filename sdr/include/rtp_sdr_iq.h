@@ -50,8 +50,9 @@
  *
  */
 enum RTP_SDR_ERROR {
-    RTP_SDR_OK = 0,    /**< OK */
-    RTP_SDR_ERROR = -1 /**< ERROR */
+    RTP_SDR_OK      = 0,  /**< OK */
+    RTP_SDR_ERROR   = -1, /**< ERROR */
+    RTP_SDR_WARNING = -2  /**< WARNING */
 };
 
 /**
