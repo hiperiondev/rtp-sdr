@@ -67,6 +67,29 @@ static void _isleep(int usec) {
     }
 }
 
+static void _pause(struct timeval start, int packet_len, sample_rate_t sample_rate) {
+    struct timeval now;
+
+    gettimeofday(&now, NULL);
+    double rate_now;
+    long duration_now;
+    duration_now = (now.tv_sec - start.tv_sec);
+    duration_now *= 1000000;
+    duration_now += now.tv_usec - start.tv_usec;
+    rate_now = packet_len * 8 * 1000;
+    rate_now = rate_now / duration_now;
+    if (rate_now > sample_rate) {
+        long int_delay = packet_len * 8 * 1000;
+        int_delay = int_delay / sample_rate;
+        int_delay = int_delay - duration_now;
+
+        if ((int_delay <= 0) || (int_delay > 10000000))
+            fprintf(stderr, "!!! BIG delay !!!  %ld\n", int_delay);
+        if (int_delay > 0)
+            _isleep(int_delay);
+    }
+}
+
 uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration,
         uint32_t host, uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty) {
 
@@ -105,7 +128,7 @@ void rcp_iq_deinit(session_iq_t *session) {
 uint8_t rcp_iq_transmit(session_iq_t *session) {
     int32_t n;
     uint8_t data[RTP_PACKET_LENGTH];
-    struct timeval start, now;
+    struct timeval start;
     int header_size;
     uint32_t iq_len;
     int packet_len = 0;
@@ -157,24 +180,7 @@ uint8_t rcp_iq_transmit(session_iq_t *session) {
     }
 
     // pause by rate
-    gettimeofday(&now, NULL);
-    double rate_now;
-    long duration_now;
-    duration_now = (now.tv_sec - start.tv_sec);
-    duration_now *= 1000000;
-    duration_now += now.tv_usec - start.tv_usec;
-    rate_now = packet_len * 8 * 1000;
-    rate_now = rate_now / duration_now;
-    if (rate_now > (*session)->tx_sample_rate) {
-        long int_delay = packet_len * 8 * 1000;
-        int_delay = int_delay / (*session)->tx_sample_rate;
-        int_delay = int_delay - duration_now;
-
-        if ((int_delay <= 0) || (int_delay > 10000000))
-            fprintf(stderr, "!!! BIG delay !!!  %ld\n", int_delay);
-        if (int_delay > 0)
-            _isleep(int_delay);
-    }
+    _pause(start, packet_len, (*session)->tx_sample_rate);
 
     return RTP_SDR_OK;
 }
