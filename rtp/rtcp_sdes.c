@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "rtp_util.h"
+#include "rtcp_util.h"
 #include "rtcp_sdes.h"
 
 /**
@@ -186,7 +187,7 @@ static int serialize_entry(const rtcp_sdes_entry *source, uint8_t *buffer, size_
 
     const size_t source_size = entry_size(source);
     if (size < source_size)
-        return -1;
+        return RTCP_ERROR;
 
     write_u32(buffer, source->id);
 
@@ -262,17 +263,17 @@ int rtcp_sdes_serialize(const rtcp_sdes *packet, uint8_t *buffer, size_t size) {
 
     const size_t packet_size = rtcp_sdes_size(packet);
     if (size < packet_size)
-        return -1;
+        return RTCP_ERROR;
 
     if (rtcp_header_serialize(&packet->header, buffer, size) < 0)
-        return -1;
+        return RTCP_ERROR;
 
     size_t offset = 4;
     for (uint8_t i = 0; i < packet->header.common.count; ++i) {
         const int result = serialize_entry(&packet->srcs[i], buffer + offset, size - offset);
 
         if (result < 0)
-            return -1;
+            return RTCP_ERROR;
 
         offset += (unsigned) result;
     }
@@ -286,7 +287,7 @@ int rtcp_sdes_parse(rtcp_sdes *packet, const uint8_t *buffer, size_t size) {
 
     const int pt = rtcp_header_parse(&packet->header, buffer, size);
     if (pt != RTCP_SDES)
-        return -1;
+        return RTCP_ERROR;
 
     // Parse sources
     if (packet->header.common.count) {
@@ -315,14 +316,14 @@ int rtcp_sdes_parse(rtcp_sdes *packet, const uint8_t *buffer, size_t size) {
                 rtcp_sdes_item *item = create_item(source, type, data + 2, length);
 
                 if (!item)
-                    return -1;
+                    return RTCP_ERROR;
 
                 offset += item_size(item);
             }
         }
     }
 
-    return 0;
+    return RTCP_OK;
 }
 
 int rtcp_sdes_find_entry(rtcp_sdes *packet, uint32_t id) {
@@ -334,7 +335,7 @@ int rtcp_sdes_find_entry(rtcp_sdes *packet, uint32_t id) {
             return i;
     }
 
-    return -1;
+    return RTCP_ERROR;
 }
 
 int rtcp_sdes_add_entry(rtcp_sdes *packet, uint32_t id) {
@@ -346,10 +347,10 @@ int rtcp_sdes_add_entry(rtcp_sdes *packet, uint32_t id) {
     }
     else {
         if (packet->header.common.count == 0xff)
-            return -1;
+            return RTCP_ERROR;
 
         if (rtcp_sdes_find_entry(packet, id) != -1)
-            return -1;
+            return RTCP_ERROR;
 
         packet->header.common.count += 1;
 
@@ -362,7 +363,7 @@ int rtcp_sdes_add_entry(rtcp_sdes *packet, uint32_t id) {
     source->item_count = 0;
     source->items = NULL;
 
-    return 0;
+    return RTCP_OK;
 }
 
 void rtcp_sdes_remove_entry(rtcp_sdes *packet, uint32_t id) {
@@ -404,12 +405,12 @@ int rtcp_sdes_get_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type, cha
 
     const int index = rtcp_sdes_find_entry(packet, src);
     if (index < 0)
-        return -1;
+        return RTCP_ERROR;
 
     rtcp_sdes_entry *source = &packet->srcs[index];
     rtcp_sdes_item *item = get_item(source, type);
     if (size < (item->length + 1U))
-        return -1;
+        return RTCP_ERROR;
 
     memcpy(buffer, item->data, item->length);
     buffer[item->length] = '\0';
@@ -423,7 +424,7 @@ int rtcp_sdes_set_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type, con
 
     const int index = rtcp_sdes_find_entry(packet, src);
     if (index < 0)
-        return -1;
+        return RTCP_ERROR;
 
     rtcp_sdes_entry *source = &packet->srcs[index];
     if (get_item(source, type))
@@ -431,15 +432,15 @@ int rtcp_sdes_set_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type, con
 
     size_t length = strlen(data);
     if (length > 0xFF)
-        return -1;
+        return RTCP_ERROR;
 
     if (create_item(source, type, data, (uint8_t) length) == NULL)
-        return -1;
+        return RTCP_ERROR;
 
     // Update header length
     packet->header.common.length = (uint16_t) ((rtcp_sdes_size(packet) / 4) - 1);
 
-    return 0;
+    return RTCP_OK;
 }
 
 void rtcp_sdes_clear_item(rtcp_sdes *packet, uint32_t src, rtcp_sdes_type type) {

@@ -117,7 +117,7 @@ typedef struct session_iq_s {
  * @param buffer_size
  * @return
  */
-uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
+uint8_t rcp_iq_init(session_iq_t *session, bool transmit, iq_type_t type, double frequency, sample_rate_t sample_rate, uint32_t duration, uint32_t host, uint16_t port,
 bool use_fec, iq_t *buffer, size_t buffer_size);
 
 /**
@@ -129,23 +129,23 @@ bool use_fec, iq_t *buffer, size_t buffer_size);
 void rcp_iq_deinit(session_iq_t *session);
 
 /**
- * @fn uint8_t  rcp_iq_transmit(session_iq_t *session, iq_t data)
+ * @fn uint8_t rcp_iq_transmit(session_iq_t *session)
  * @brief
  *
  * @param session
  * @param data
  * @return
  */
-uint8_t rcp_iq_receive(session_iq_t *session, iq_t *data);
+uint8_t rcp_iq_transmit(session_iq_t *session);
 
 /**
- * @fn uint8_t rcp_iq_receive(session_iq_t*, iq_t*)
+ * @fn uint8_t rcp_iq_receive(session_iq_t *session))
  * @brief
  *
  * @param session
  * @param data
  * @return
  */
-uint8_t rcp_iq_receive(session_iq_t *session, iq_t *data);
+uint8_t rcp_iq_receive(session_iq_t *session);
 
 #endif /* RTP_IQ_H_ */

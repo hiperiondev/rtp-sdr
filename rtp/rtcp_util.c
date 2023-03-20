@@ -44,13 +44,13 @@ int rtcp_type(const uint8_t *buffer, size_t size) {
     assert(buffer != NULL);
 
     if (size < 2)
-        return -1;
+        return RTCP_ERROR;
 
     int pt = buffer[1];
     if (pt >= RTCP_SR && pt <= RTCP_APP)
         return pt;
 
-    return -1;
+    return RTCP_ERROR;
 }
 
 double rtcp_interval(int members, int senders, double rtcp_bw, bool we_sent, double avg_rtcp_size, bool initial) {

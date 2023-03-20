@@ -40,6 +40,7 @@
 
 #include "rtp_ntp.h"
 #include "rtp_util.h"
+#include "rtcp_util.h"
 #include "rtcp_report.h"
 
 void rtcp_report_init(rtcp_report *report, rtp_source *s, ntp_tv tc) {
@@ -61,7 +62,7 @@ int rtcp_report_serialize(const rtcp_report *report, uint8_t *buffer, size_t siz
     assert(buffer != NULL);
 
     if (size < 24)
-        return -1;
+        return RTCP_ERROR;
 
     write_u32(buffer, report->ssrc);
 
@@ -81,7 +82,7 @@ int rtcp_report_parse(rtcp_report *report, const uint8_t *buffer, size_t size) {
     assert(buffer != NULL);
 
     if (size < 24)
-        return -1;
+        return RTCP_ERROR;
 
     report->ssrc = read_u32(buffer);
 
@@ -92,5 +93,5 @@ int rtcp_report_parse(rtcp_report *report, const uint8_t *buffer, size_t size) {
     report->lsr = read_u32(buffer + 16);
     report->dlsr = read_u32(buffer + 20);
 
-    return 0;
+    return RTCP_OK;
 }

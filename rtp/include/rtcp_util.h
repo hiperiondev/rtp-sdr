@@ -42,6 +42,16 @@
 #include <stddef.h>
 
 /**
+ * @enum RTCP_ERROR
+ * @brief rtcp error
+ *
+ */
+enum RTCP_ERROR {
+    RTCP_OK    = 0, /**< OK */   /**< RTCP_OK */
+    RTCP_ERROR = -1 /**< ERROR *//**< RTCP_ERROR */
+};
+
+/**
  * @brief The minimum average time between RTCP packets in seconds.
  *
  * @see IETF RFC3550 "Computing the RTCP Transmission Interval" (§A.7)

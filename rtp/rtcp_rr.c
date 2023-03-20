@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "rtp_util.h"
+#include "rtcp_util.h"
 #include "rtcp_rr.h"
 
 rtcp_rr* rtcp_rr_create(void) {
@@ -85,10 +86,10 @@ int rtcp_rr_serialize(const rtcp_rr *packet, uint8_t *buffer, size_t size) {
 
     const size_t packet_size = rtcp_rr_size(packet);
     if (size < packet_size)
-        return -1;
+        return RTCP_ERROR;
 
     if (rtcp_header_serialize(&packet->header, buffer, size) < 0)
-        return -1;
+        return RTCP_ERROR;
 
     write_u32(buffer + 4, packet->ssrc);
 
@@ -97,7 +98,7 @@ int rtcp_rr_serialize(const rtcp_rr *packet, uint8_t *buffer, size_t size) {
         const int result = rtcp_report_serialize(&packet->reports[i], buffer + offset, size - offset);
 
         if (result < 0)
-            return -1;
+            return RTCP_ERROR;
 
         offset += (unsigned) result;
     }
@@ -114,7 +115,7 @@ int rtcp_rr_parse(rtcp_rr *packet, const uint8_t *buffer, size_t size) {
 
     const int pt = rtcp_header_parse(&packet->header, buffer, size);
     if (pt != RTCP_RR)
-        return -1;
+        return RTCP_ERROR;
 
     packet->ssrc = read_u32(buffer + 4);
 
@@ -125,7 +126,7 @@ int rtcp_rr_parse(rtcp_rr *packet, const uint8_t *buffer, size_t size) {
         for (uint8_t i = 0; i < packet->header.common.count; ++i) {
             rtcp_report *report = &packet->reports[i];
             if (rtcp_report_parse(report, buffer + offset, size - offset) < 0)
-                return -1;
+                return RTCP_ERROR;
 
             offset += sizeof(rtcp_report);
         }
@@ -139,7 +140,7 @@ int rtcp_rr_parse(rtcp_rr *packet, const uint8_t *buffer, size_t size) {
         memcpy(packet->ext_data, buffer + offset, packet->ext_size);
     }
 
-    return 0;
+    return RTCP_OK;
 }
 
 rtcp_report* rtcp_rr_find_report(rtcp_rr *packet, uint32_t src_id) {
@@ -164,10 +165,10 @@ int rtcp_rr_add_report(rtcp_rr *packet, const rtcp_report *report) {
     }
     else {
         if (packet->header.common.count == 0xff)
-            return -1;
+            return RTCP_ERROR;
 
         if (rtcp_rr_find_report(packet, report->ssrc))
-            return -1;
+            return RTCP_ERROR;
 
         packet->header.common.count += 1;
 
@@ -181,7 +182,7 @@ int rtcp_rr_add_report(rtcp_rr *packet, const rtcp_report *report) {
     // Update header length
     packet->header.common.length = (uint16_t) ((rtcp_rr_size(packet) / 4) - 1);
 
-    return 0;
+    return RTCP_OK;
 }
 
 void rtcp_rr_remove_report(rtcp_rr *packet, uint32_t src_id) {
@@ -211,8 +212,6 @@ void rtcp_rr_remove_report(rtcp_rr *packet, uint32_t src_id) {
 
     // Update header length
     packet->header.common.length = (uint16_t) ((rtcp_rr_size(packet) / 4) - 1);
-
-    return;
 }
 
 int rtcp_rr_set_ext(rtcp_rr *packet, const void *data, size_t size) {
@@ -220,11 +219,11 @@ int rtcp_rr_set_ext(rtcp_rr *packet, const void *data, size_t size) {
     assert(data != NULL);
 
     if (packet->ext_data)
-        return -1;
+        return RTCP_ERROR;
 
     packet->ext_data = malloc(size);
     if (packet->ext_data == NULL)
-        return -1;
+        return RTCP_ERROR;
 
     packet->ext_size = size;
     memcpy(packet->ext_data, data, size);
@@ -232,7 +231,7 @@ int rtcp_rr_set_ext(rtcp_rr *packet, const void *data, size_t size) {
     // Update header length
     packet->header.common.length = (uint16_t) ((rtcp_rr_size(packet) / 4) - 1);
 
-    return 0;
+    return RTCP_OK;
 }
 
 void rtcp_rr_clear_ext(rtcp_rr *packet) {

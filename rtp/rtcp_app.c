@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "rtp_util.h"
+#include "rtcp_util.h"
 #include "rtcp_app.h"
 
 rtcp_app* rtcp_app_create(void) {
@@ -107,7 +108,7 @@ int rtcp_app_parse(rtcp_app *packet, const uint8_t *buffer, size_t size) {
 
     const int pt = rtcp_header_parse(&packet->header, buffer, size);
     if (pt != RTCP_APP)
-        return -1;
+        return RTCP_ERROR;
 
     packet->ssrc = read_u32(buffer + 4);
     packet->name = read_u32(buffer + 8);
@@ -119,7 +120,7 @@ int rtcp_app_parse(rtcp_app *packet, const uint8_t *buffer, size_t size) {
         memcpy(packet->app_data, buffer + 12, packet->app_size);
     }
 
-    return 0;
+    return RTCP_OK;
 }
 
 int rtcp_app_set_data(rtcp_app *packet, const void *data, size_t size) {
@@ -131,7 +132,7 @@ int rtcp_app_set_data(rtcp_app *packet, const void *data, size_t size) {
 
     packet->app_data = malloc(size);
     if (!packet->app_data)
-        return -1;
+        return RTCP_ERROR;
 
     packet->app_size = size;
     memcpy(packet->app_data, data, size);
@@ -139,7 +140,7 @@ int rtcp_app_set_data(rtcp_app *packet, const void *data, size_t size) {
     // Update header length
     packet->header.common.length = (uint16_t) ((rtcp_app_size(packet) / 4) - 1);
 
-    return 0;
+    return RTCP_OK;
 }
 
 void rtcp_app_clear_data(rtcp_app *packet) {

@@ -38,6 +38,7 @@
 #include <assert.h>
 
 #include "rtp_util.h"
+#include "rtcp_util.h"
 #include "rtcp_header.h"
 
 int rtcp_header_serialize(const rtcp_header *header, uint8_t *buffer, size_t size) {
@@ -45,7 +46,7 @@ int rtcp_header_serialize(const rtcp_header *header, uint8_t *buffer, size_t siz
     assert(buffer != NULL);
 
     if (size < 4)
-        return -1;
+        return RTCP_ERROR;
 
     buffer[0] = (uint8_t) ((header->common.version << 6) | (header->common.p << 5) | (header->common.count));
 
@@ -60,7 +61,7 @@ int rtcp_header_parse(rtcp_header *header, const uint8_t *buffer, size_t size) {
     assert(buffer != NULL);
 
     if (size < 4)
-        return -1;
+        return RTCP_ERROR;
 
     header->common.version = (unsigned) ((buffer[0] >> 6) & 0x3);
     header->common.p = (unsigned) ((buffer[0] >> 5) & 0x1);
@@ -69,7 +70,7 @@ int rtcp_header_parse(rtcp_header *header, const uint8_t *buffer, size_t size) {
     header->common.length = read_u16(buffer + 2);
 
     if (header->common.version != 2)
-        return -1;
+        return RTCP_ERROR;
 
     return header->common.pt;
 }
