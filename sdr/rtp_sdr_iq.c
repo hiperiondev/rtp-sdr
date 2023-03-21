@@ -69,19 +69,17 @@ static void _isleep(int usec) {
 
 static void _pause(struct timeval start, int packet_len, sample_rate_t sample_rate) {
     struct timeval now;
-
-    gettimeofday(&now, NULL);
     double rate_now;
     long duration_now;
-    duration_now = (now.tv_sec - start.tv_sec);
-    duration_now *= 1000000;
-    duration_now += now.tv_usec - start.tv_usec;
-    rate_now = packet_len * 8 * 1000;
-    rate_now = rate_now / duration_now;
+
+    gettimeofday(&now, NULL);
+
+    duration_now = ((now.tv_sec - start.tv_sec) * 1000000) + (now.tv_usec - start.tv_usec);
+    rate_now = (packet_len * 8 * 1000) / duration_now;
+
     if (rate_now > sample_rate) {
         long int_delay = packet_len * 8 * 1000;
-        int_delay = int_delay / sample_rate;
-        int_delay = int_delay - duration_now;
+        int_delay = (int_delay / sample_rate) - duration_now;
 
         if ((int_delay <= 0) || (int_delay > 10000000))
             fprintf(stderr, "!!! BIG delay !!!  %ld\n", int_delay);
@@ -249,34 +247,4 @@ uint8_t rcp_iq_receive(session_iq_t *session) {
     (*session)->rx_header = NULL;
 
     return RTP_SDR_OK;
-}
-
-void* rcp_iq_transmit_handler(void *arg) {
-    session_iq_t *session = (session_iq_t*) arg;
-
-    while (1) {
-        while ((*session)->tx_enabled) {
-            if (rcp_iq_transmit(session) == RTP_SDR_ERROR)
-                return NULL;
-        }
-
-        usleep(1000);
-    }
-
-    return NULL;
-}
-
-void* rcp_iq_receive_handler(void *arg) {
-    session_iq_t *session = (session_iq_t*) arg;
-
-    while (1) {
-        while ((*session)->tx_enabled) {
-            if (rcp_iq_receive(session) == RTP_SDR_ERROR)
-                return NULL;
-        }
-
-        usleep(1000);
-    }
-
-    return NULL;
 }

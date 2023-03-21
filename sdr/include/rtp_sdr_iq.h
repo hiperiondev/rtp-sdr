@@ -160,21 +160,4 @@ uint8_t rcp_iq_transmit(session_iq_t *session);
  */
 uint8_t rcp_iq_receive(session_iq_t *session);
 
-/**
- * @fn void* rcp_iq_transmit_handler(void *arg)
- * @brief
- *
- * @param arg
- */
-void* rcp_iq_transmit_handler(void *arg);
-
-/**
- * @fn void* rcp_iq_receive_handler(void *arg)
- * @brief
- *
- * @param arg
- */
-void* rcp_iq_receive_handler(void *arg);
-
-
 #endif /* RTP_IQ_H_ */
