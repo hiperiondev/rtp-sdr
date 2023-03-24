@@ -44,6 +44,26 @@
 #include "rtp_socket.h"
 #include "rtp_sdr_rbuf.h"
 
+#define PRINT_SESION(s)                                               \
+    printf("\n-------- SESSION --------\n");                          \
+    printf("  tx_enabled: %d\n",(int)(*(s))->tx_enabled);             \
+    printf("  use_fec: %d\n",(int)(*(s))->use_fec);                   \
+    printf("  tx_frame_samples: %d\n",(int)(*(s))->tx_frame_samples); \
+    printf("  rx_frame_samples: %d\n",(int)(*(s))->rx_frame_samples); \
+    printf("  frame_size: %d\n",(int)(*(s))->frame_size);             \
+    printf("  tx_type: %d\n",(int)(*(s))->tx_type);                   \
+    printf("  rx_type: %d\n",(int)(*(s))->tx_type);                   \
+    printf("  tx_qty: %d\n",(int)(*(s))->tx_qty);                     \
+    printf("  rx_qty: %d\n",(int)(*(s))->rx_qty);                     \
+    printf("  tx_sample_rate: %d\n",(int)(*(s))->tx_sample_rate);     \
+    printf("  rx_sample_rate: %d\n",(int)(*(s))->rx_sample_rate);     \
+    printf("  tx_port: %d\n",(int)(*(s))->tx_port);                   \
+    printf("  rx_port: %d\n",(int)(*(s))->rx_port);                   \
+    printf("  host: %s\n",(*(s))->host);                              \
+    printf("-------------------------\n\n");
+
+#define RTP_PACKET_LENGTH 4096 /**< packet length */
+
 /**
  * @enum RTP_SDR_ERROR
  * @brief rtp_sdr error types
@@ -96,26 +116,29 @@ typedef struct session_iq_s {
          uint32_t frame_size;       /**< frame size */
     rbuf_handle_t tx_iq_buffer;     /**< tx i/q circular buffer */
     rbuf_handle_t rx_iq_buffer;     /**< rx i/q circular buffer */
-        iq_type_t type;             /**< rtp payload type (with marker stripped) */
+        iq_type_t tx_type;          /**< rtp payload type (with marker stripped) */
+        iq_type_t rx_type;          /**< rtp payload type (with marker stripped) */
           uint8_t tx_qty;           /**< quantity of transmitters */
           uint8_t rx_qty;           /**< quantity of receivers */
            double *tx_frequency;    /**< tx lo frequency */
            double *rx_frequency;    /**< rx lo frequency */
     sample_rate_t tx_sample_rate;   /**< tx nominal sampling rate */
     sample_rate_t rx_sample_rate;   /**< rx nominal sampling rate */
-         uint16_t port;             /**< port */
-         uint32_t host;             /**< ip */
-     rtp_socket_t socket;           /**< socket */
+         uint16_t tx_port;          /**< tx port */
+         uint16_t rx_port;          /**< rx port */
+       const char *host;            /**< ip */
+     rtp_socket_t tx_socket;        /**< tx socket */
+     rtp_socket_t rx_socket;        /**< rx socket */
 } *session_iq_t;                    /**< i/q session data type */
 
 /**
- * @fn uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration, uint32_t host,
-        uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty)
+ * @fn uint8_t rcp_iq_init(session_iq_t *session, iq_type_t txtype, iq_type_t rxtype, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration,
+        const char *host, uint16_t tx_port, uint16_t rx_port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty,
+        uint8_t rx_qty);
  * @brief
  *
  * @param session
  * @param type
- * @param frequency
  * @param tx_sample_rate
  * @param rx_sample_rate
  * @param duration
@@ -129,8 +152,9 @@ typedef struct session_iq_s {
  * @param rx_qty
  * @return
  */
-uint8_t rcp_iq_init(session_iq_t *session, iq_type_t type, double frequency, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration, uint32_t host,
-        uint16_t port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty, uint8_t rx_qty);
+uint8_t rcp_iq_init(session_iq_t *session, iq_type_t txtype, iq_type_t rxtype, sample_rate_t tx_sample_rate, sample_rate_t rx_sample_rate, uint32_t duration,
+        const char *host, uint16_t tx_port, uint16_t rx_port, bool use_fec, iq_t *tx_buffer, iq_t *rx_buffer, size_t buffer_size, uint8_t tx_qty,
+        uint8_t rx_qty);
 
 /**
  * @fn void rcp_iq_deinit(session_iq_t *session)

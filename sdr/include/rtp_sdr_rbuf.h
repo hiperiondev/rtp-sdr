@@ -105,7 +105,7 @@ rbuf_handle_t rtp_sdr_rbuf_init(iq_t *buffer, size_t size, rtp_sdr_sbuf_type_t t
  *
  * @param me
  */
-void rtp_sdr_rbuf_free(rbuf_handle_t me);
+void rtp_sdr_rbuf_free(rbuf_handle_t *me);
 
 /**
  * @fn void rtp_sdr_rbuf_reset(rbuf_handle_t me)
@@ -114,7 +114,7 @@ void rtp_sdr_rbuf_free(rbuf_handle_t me);
  *
  * @param me
  */
-void rtp_sdr_rbuf_reset(rbuf_handle_t me);
+void rtp_sdr_rbuf_reset(rbuf_handle_t *me);
 
 /**
  * @fn void rtp_sdr_rbuf_put(rbuf_handle_t me, iq_t data)
@@ -126,7 +126,7 @@ void rtp_sdr_rbuf_reset(rbuf_handle_t me);
  * @param me
  * @param data
  */
-void rtp_sdr_rbuf_put(rbuf_handle_t me, iq_t data);
+void rtp_sdr_rbuf_put(rbuf_handle_t *me, iq_t data);
 
 /**
  * @fn int rtp_sdr_rbuf_try_put(rbuf_handle_t me, iq_t data)
@@ -139,7 +139,7 @@ void rtp_sdr_rbuf_put(rbuf_handle_t me, iq_t data);
  * @param data
  * @return
  */
-int rtp_sdr_rbuf_try_put(rbuf_handle_t me, iq_t data);
+int rtp_sdr_rbuf_try_put(rbuf_handle_t *me, iq_t data);
 
 ///
 /**
@@ -152,7 +152,7 @@ int rtp_sdr_rbuf_try_put(rbuf_handle_t me, iq_t data);
  * @param data
  * @return
  */
-int rtp_sdr_rbuf_get(rbuf_handle_t me, iq_t *data);
+int rtp_sdr_rbuf_get(rbuf_handle_t *me, iq_t *data);
 
 /**
  * @fn bool rtp_sdr_rbuf_empty(rbuf_handle_t me)
@@ -163,7 +163,7 @@ int rtp_sdr_rbuf_get(rbuf_handle_t me, iq_t *data);
  * @param me
  * @return
  */
-bool rtp_sdr_rbuf_empty(rbuf_handle_t me);
+bool rtp_sdr_rbuf_empty(rbuf_handle_t *me);
 
 /**
  * @fn bool rtp_sdr_rbuf_full(rbuf_handle_t me)
@@ -174,7 +174,7 @@ bool rtp_sdr_rbuf_empty(rbuf_handle_t me);
  * @param me
  * @return
  */
-bool rtp_sdr_rbuf_full(rbuf_handle_t me);
+bool rtp_sdr_rbuf_full(rbuf_handle_t *me);
 
 /**
  * @fn size_t rtp_sdr_rbuf_capacity(rbuf_handle_t me)
@@ -185,7 +185,7 @@ bool rtp_sdr_rbuf_full(rbuf_handle_t me);
  * @param me
  * @return
  */
-size_t rtp_sdr_rbuf_capacity(rbuf_handle_t me);
+size_t rtp_sdr_rbuf_capacity(rbuf_handle_t *me);
 
 /**
  * @fn size_t rtp_sdr_rbuf_size(rbuf_handle_t me)
@@ -196,7 +196,7 @@ size_t rtp_sdr_rbuf_capacity(rbuf_handle_t me);
  * @param me
  * @return
  */
-size_t rtp_sdr_rbuf_size(rbuf_handle_t me);
+size_t rtp_sdr_rbuf_size(rbuf_handle_t *me);
 
 /**
  * @fn int rtp_sdr_rbuf_peek(rbuf_handle_t me, iq_t *data, unsigned int look_ahead_counter)
@@ -211,6 +211,6 @@ size_t rtp_sdr_rbuf_size(rbuf_handle_t me);
  * @param look_ahead_counter
  * @return
  */
-int rtp_sdr_rbuf_peek(rbuf_handle_t me, iq_t *data, unsigned int look_ahead_counter);
+int rtp_sdr_rbuf_peek(rbuf_handle_t *me, iq_t *data, unsigned int look_ahead_counter);
 
 #endif // RTP_SDR_RBUF_H_

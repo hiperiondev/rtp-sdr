@@ -423,8 +423,10 @@ static int _set_multicast_loopback(rtp_socket_t *sock, char loop) {
     return retval;
 }
 
-int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *port, const char *ifname) {
+int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, uint16_t port_i, const char *ifname) {
     int is_multicast, err;
+    char port[6];
+    sprintf(port, "%d", port_i);
 
     // Initialise
     memset(sock, 0, sizeof(rtp_socket_t));
@@ -455,8 +457,10 @@ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *po
     return RTP_OK;
 }
 
-int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *port, const char *ifname) {
+int rtp_socket_open_send(rtp_socket_t *sock, const char *address, uint16_t port_i, const char *ifname) {
     int is_multicast;
+    char port[6];
+    sprintf(port, "%d", port_i);
 
     // Initialize
     memset(sock, 0, sizeof(rtp_socket_t));

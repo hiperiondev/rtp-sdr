@@ -71,121 +71,120 @@ rbuf_handle_t rtp_sdr_rbuf_init(iq_t *buffer, size_t size, rtp_sdr_sbuf_type_t t
     cbuf->type = type;
     cbuf->buffer = buffer;
     cbuf->max = size;
-    rtp_sdr_rbuf_reset(cbuf);
+    rtp_sdr_rbuf_reset(&cbuf);
 
-    assert(rtp_sdr_rbuf_empty(cbuf));
+    assert(rtp_sdr_rbuf_empty(&cbuf));
 
     return cbuf;
 }
 
-void rtp_sdr_rbuf_free(rbuf_handle_t me) {
-    assert(me);
-    free(me);
+void rtp_sdr_rbuf_free(rbuf_handle_t *me) {
+    assert(*me);
+    free(*me);
 }
 
-void rtp_sdr_rbuf_reset(rbuf_handle_t me) {
-    assert(me);
+void rtp_sdr_rbuf_reset(rbuf_handle_t *me) {
+    assert(*me);
 
-    me->head = 0;
-    me->tail = 0;
+    (*me)->head = 0;
+    (*me)->tail = 0;
 }
 
-size_t rtp_sdr_rbuf_size(rbuf_handle_t me) {
-    assert(me);
+size_t rtp_sdr_rbuf_size(rbuf_handle_t *me) {
+    assert(*me);
 
     // We account for the space we can't use for thread safety
-    size_t size = me->max - 1;
+    size_t size = (*me)->max - 1;
 
     if (!rtp_sdr_rbuf_full(me)) {
-        if (me->head >= me->tail) {
-            size = (me->head - me->tail);
+        if ((*me)->head >= (*me)->tail) {
+            size = ((*me)->head - (*me)->tail);
         } else {
-            size = (me->max + me->head - me->tail);
+            size = ((*me)->max + (*me)->head - (*me)->tail);
         }
     }
 
     return size;
 }
 
-size_t rtp_sdr_rbuf_capacity(rbuf_handle_t me) {
-    assert(me);
+size_t rtp_sdr_rbuf_capacity(rbuf_handle_t *me) {
+    assert(*me);
 
     // We account for the space we can't use for thread safety
-    return me->max - 1;
+    return (*me)->max - 1;
 }
 
 /// For thread safety, do not use put - use try_put.
 /// Because this version, which will overwrite the existing contents
 /// of the buffer, will involve modifying the tail pointer, which is also
 /// modified by get.
-void rtp_sdr_rbuf_put(rbuf_handle_t me, iq_t data) {
-    assert(me && me->buffer);
+void rtp_sdr_rbuf_put(rbuf_handle_t *me, iq_t data) {
+    assert(*me && (*me)->buffer);
 
-    me->buffer[me->head] = data;
+    (*me)->buffer[(*me)->head] = data;
     if (rtp_sdr_rbuf_full(me)) {
         // THIS CONDITION IS NOT THREAD SAFE
-        me->tail = _advance_headtail_value(me->tail, me->max);
+        (*me)->tail = _advance_headtail_value((*me)->tail, (*me)->max);
     }
 
-    me->head = _advance_headtail_value(me->head, me->max);
+    (*me)->head = _advance_headtail_value((*me)->head, (*me)->max);
 }
 
-int rtp_sdr_rbuf_try_put(rbuf_handle_t me, iq_t data) {
-    assert(me);
-    assert(me->buffer);
+int rtp_sdr_rbuf_try_put(rbuf_handle_t *me, iq_t data) {
+    assert(*me);
+    assert((*me)->buffer);
 
     int r = RTP_SDR_RBUF_ERROR;
 
     if (!rtp_sdr_rbuf_full(me)) {
-        me->buffer[me->head] = data;
-        me->head = _advance_headtail_value(me->head, me->max);
+        (*me)->buffer[(*me)->head] = data;
+        (*me)->head = _advance_headtail_value((*me)->head, (*me)->max);
         r = RTP_SDR_RBUF_OK;
     }
 
     return r;
 }
 
-int rtp_sdr_rbuf_get(rbuf_handle_t me, iq_t *data) {
-    assert(me);
+int rtp_sdr_rbuf_get(rbuf_handle_t *me, iq_t *data) {
+    assert(*me);
     assert(data);
-    assert(me->buffer);
+    assert((*me)->buffer);
 
     int r = RTP_SDR_RBUF_ERROR;
 
     if (!rtp_sdr_rbuf_empty(me)) {
-        *data = me->buffer[me->tail];
-        me->tail = _advance_headtail_value(me->tail, me->max);
+        *data = (*me)->buffer[(*me)->tail];
+        (*me)->tail = _advance_headtail_value((*me)->tail, (*me)->max);
         r = RTP_SDR_RBUF_OK;
     }
 
     return r;
 }
 
-bool rtp_sdr_rbuf_empty(rbuf_handle_t me) {
-    assert(me);
-    return me->head == me->tail;
+bool rtp_sdr_rbuf_empty(rbuf_handle_t *me) {
+    assert(*me);
+    return (*me)->head == (*me)->tail;
 }
 
-bool rtp_sdr_rbuf_full(rbuf_handle_t me) {
+bool rtp_sdr_rbuf_full(rbuf_handle_t *me) {
     // We want to check, not advance, so we don't save the output here
-    return _advance_headtail_value(me->head, me->max) == me->tail;
+    return _advance_headtail_value((*me)->head, (*me)->max) == (*me)->tail;
 }
 
-int rtp_sdr_rbuf_peek(rbuf_handle_t me, iq_t *data, unsigned int look_ahead_counter) {
-    int r = RTP_SDR_RBUF_ERROR;
+int rtp_sdr_rbuf_peek(rbuf_handle_t *me, iq_t *data, unsigned int look_ahead_counter) {
     size_t pos;
 
-    assert(me && data && me->buffer);
+    assert(*me && data && (*me)->buffer);
 
     // We can't look beyond the current buffer size
     if (rtp_sdr_rbuf_empty(me) || look_ahead_counter > rtp_sdr_rbuf_size(me)) {
-        return r;
+        return RTP_SDR_RBUF_ERROR;
     }
 
-    pos = me->tail;
+    pos = (*me)->tail;
     for (unsigned int i = 0; i < look_ahead_counter; i++) {
-        data[i] = me->buffer[pos];
-        pos = _advance_headtail_value(pos, me->max);
+        data[i] = (*me)->buffer[pos];
+        pos = _advance_headtail_value(pos, (*me)->max);
     }
 
     return RTP_SDR_RBUF_OK;

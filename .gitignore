@@ -56,4 +56,5 @@ dkms.conf
 Release
 .settings
 temp
-
+test*
+vgcore*

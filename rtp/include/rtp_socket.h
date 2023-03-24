@@ -74,8 +74,8 @@ typedef struct rtp_socket_s {
     };
 } rtp_socket_t;
 
- int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, const char *port, const char *ifname);
- int rtp_socket_open_send(rtp_socket_t *sock, const char *address, const char *port, const char *ifname);
+ int rtp_socket_open_recv(rtp_socket_t *sock, const char *address, uint16_t port, const char *ifname);
+ int rtp_socket_open_send(rtp_socket_t *sock, const char *address, uint16_t port, const char *ifname);
  int rtp_socket_recv(rtp_socket_t *sock, void *data, unsigned int len);
  int rtp_socket_send(rtp_socket_t *sock, void *data, unsigned int len);
 void rtp_socket_close(rtp_socket_t *sock);
