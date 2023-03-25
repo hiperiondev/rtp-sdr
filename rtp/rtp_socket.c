@@ -521,8 +521,7 @@ int rtp_socket_recv(rtp_socket_t *sock, void *data, unsigned int len) {
 int rtp_socket_send(rtp_socket_t *sock, void *data, unsigned int len) {
     rtp_socket_debug("Sending %d byte packet", len);
 
-    int nbytes = sendto(sock->fd, data, len, 0, // Flags
-            (struct sockaddr*) &sock->dest_addr, _sockaddr_len(sock->dest_addr.ss_family));
+    int nbytes = sendto(sock->fd, data, len, 0, (struct sockaddr*) &sock->dest_addr, _sockaddr_len(sock->dest_addr.ss_family));
     if (nbytes <= 0) {
         rtp_socket_warn("sending packet failed: %s", strerror(errno));
         return nbytes;

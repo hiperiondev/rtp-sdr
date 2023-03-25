@@ -118,7 +118,7 @@ static void signal_cb(int signal) {
 void* rcp_iq_transmit_handler(void *arg) {
     session_iq_t *session = (session_iq_t*) arg;
 
-    if (rtp_socket_open_send(&((*session)->rx_socket), (*session)->host, (*session)->tx_port, NULL) == RTP_ERROR) {
+    if (rtp_socket_open_send(&((*session)->tx_socket), (*session)->host, (*session)->tx_port, NULL) == RTP_ERROR) {
         perror("TX SOCKET error");
         exit(2);
     }
@@ -147,13 +147,14 @@ void* rcp_iq_receive_handler(void *arg) {
     rxptr = fopen(filename, "wb");
 
     while (1) {
-        if (rtp_sdr_rbuf_empty(&((*session)->rx_iq_buffer)))
-            continue;
-
         if (rcp_iq_receive(session) == RTP_SDR_ERROR)
             continue;
 
+        if (rtp_sdr_rbuf_empty(&((*session)->rx_iq_buffer)))
+            continue;
+
         fwrite((*session)->rx_iq_buffer, sizeof(iq_t), 1, rxptr);
+        fflush(rxptr);
     }
 
     fclose(rxptr);

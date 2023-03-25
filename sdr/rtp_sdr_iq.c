@@ -121,6 +121,7 @@ void rcp_iq_deinit(session_iq_t *session) {
 }
 
 uint8_t rcp_iq_transmit(session_iq_t *session) {
+    char err[200];
     int32_t n;
     uint8_t data[RTP_PACKET_LENGTH];
     struct timeval start;
@@ -171,7 +172,8 @@ uint8_t rcp_iq_transmit(session_iq_t *session) {
 
     int error = rtp_socket_send(&((*session)->tx_socket), data, RTP_PACKET_LENGTH);
     if (error < 0) {
-        fprintf(stderr, "Failed to send packet: %s\n", strerror(errno));
+        sprintf(err, "Failed to send packet: %s\n", strerror(errno));
+        perror(err);
         return RTP_SDR_ERROR;
     }
 
@@ -182,19 +184,21 @@ uint8_t rcp_iq_transmit(session_iq_t *session) {
 }
 
 uint8_t rcp_iq_receive(session_iq_t *session) {
+    char err[200];
     uint8_t data[RTP_PACKET_LENGTH];
     int n, pos = 0;
     iq_t iq_data;
 
     int packet_len = rtp_socket_recv(&((*session)->rx_socket), data, sizeof(data));
     if (packet_len < 0) {
-        fprintf(stderr, "Failed to receive packet: %s\n", strerror(errno));
+        sprintf(err, "Failed to receive packet: %s\n", strerror(errno));
+        perror(err);
         return RTP_SDR_WARNING;
     }
 
     (*session)->rx_header = rtp_header_create();
     if (rtp_header_parse((*session)->rx_header, data, packet_len) < 0) {
-        fprintf(stderr, "Bad packet - dropping\n");
+        perror("Bad packet - dropping\n");
         return RTP_SDR_WARNING;
     }
 
